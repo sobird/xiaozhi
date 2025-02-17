@@ -9,40 +9,78 @@ import voiceWave from '@/utils/voiceWave';
 import DgramService from './DgramService';
 import { MqttMessage } from './MqttService';
 
-let localSequence = 0;
+const AUDIO_PARAMS: MqttMessage['audio_params'] = {
+  sample_rate: 48000,
+  channels: 2,
+  frame_duration: 60,
+};
+// 单例
+export class AudioService {
+  options: MqttMessage;
 
-export default class AudioService {
   mic?: Recording;
 
   speaker?: Speaker;
 
-  listening = false;
+  sequence = 0;
 
-  sendAudio(opusInfo: MqttMessage) {
-    const { key, nonce } = opusInfo.udp;
+  opus: OpusScript;
 
-    const samplingRate = 48000;
+  start(options: MqttMessage) {
+    this.options = options;
+    this.createMicrophone();
+    // this.createSpeaker();
+
+    const { sample_rate: sampleRate, channels } = AUDIO_PARAMS;
+    this.opus = new OpusScript(sampleRate, channels, OpusScript.Application.AUDIO);
+
+    this.sequence = 0;
+  }
+
+  // 用户暂停说话
+  pauseSendAudio() {
+    this.mic?.pause();
+    // voiceWave.stop();
+    this.speaker = AudioService.Speaker();
+  }
+
+  resumeSendAudio() {
+    // voiceWave.start();
+    this.mic?.resume();
+  }
+
+  // 启动麦克风
+  createMicrophone() {
+    if (this.mic) {
+      return;
+    }
+    const sampleRate = 48000;
     const frameDuration = 20;
     const channels = 2;
-    const encoder = new OpusScript(samplingRate, channels, OpusScript.Application.AUDIO);
-    const frameSize = (samplingRate * frameDuration) / 1000;
+    // const { sample_rate: sampleRate, channels, frame_duration: frameDuration } = this.options.audio_params;
+    const frameSize = (sampleRate * frameDuration) / 1000;
 
     const mic = Record.record({
-      sampleRate: 48000,
-      channels: 2,
-      threshold: 0.5,
+      sampleRate,
+      channels,
     });
+
+    const encoder = new OpusScript(48000, 2, OpusScript.Application.AUDIO);
 
     // voiceWave.start();
 
     mic.stream().on('data', (data: Buffer) => {
-      const encodedPacket = encoder.encode(data, frameSize);
+      console.log('mic data', data);
+
+      const { key, nonce } = this.options.udp;
+
+      const encodedPacket = this.opus.encode(data, frameSize);
       const encodedDataLengthHex = encodedPacket.length.toString(16).padStart(4, '0');
-      localSequence += 1;
-      const localSequenceHex = localSequence.toString(16).padStart(8, '0');
+      this.sequence += 1;
+      const sequenceHex = this.sequence.toString(16).padStart(8, '0');
 
       const newNonce = nonce.slice(0, 4)
-      + encodedDataLengthHex + nonce.slice(8, 24) + localSequenceHex;
+      + encodedDataLengthHex + nonce.slice(8, 24) + sequenceHex;
       const encryptedData = aesCtrEncrypt(key, newNonce, encodedPacket);
       const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
 
@@ -59,37 +97,28 @@ export default class AudioService {
     this.mic = mic;
   }
 
-  // 用户暂停说话
-  pauseSendAudio() {
-    this.mic?.pause();
-    // voiceWave.stop();
+  // 启动扬声器
+  createSpeaker(opusInfo: MqttMessage) {
+    if (this.speaker) {
+      return;
+    }
 
-    this.speaker = new Speaker({
-      channels: 2, // 2 channels
-      bitDepth: 16, // 16-bit samples
-      sampleRate: 24000, // 44,100 Hz sample rate
-    });
-  }
-
-  resumeSendAudio() {
-    this.listening = true;
-    // voiceWave.start();
-    this.mic?.resume();
-  }
-
-  playAudio(opusInfo: MqttMessage) {
-    const { key, nonce } = opusInfo.udp;
-    const { sample_rate: sampleRate, frame_duration: frameDuration } = opusInfo.audio_params;
-    const frameNum = Math.floor(frameDuration / (1000 / sampleRate));
-    const opusScript = new OpusScript(sampleRate, 2, OpusScript.Application.AUDIO);
+    // const { sample_rate: sampleRate, frame_duration: frameDuration } = opusInfo.audio_params;
+    // const frameNum = Math.floor(frameDuration / (1000 / sampleRate));
 
     let timer: NodeJS.Timeout;
+    this.speaker = AudioService.Speaker();
+
+    console.log('create Speaker opusInfo', opusInfo);
 
     DgramService.on('message', (data) => {
+      const { key, nonce } = opusInfo.udp;
+      console.log('speaker data', data);
+
       const splitNonce = data.subarray(0, 16);
       const encryptedData = data.subarray(16);
       const decryptedData = aesCtrDecrypt(key, splitNonce.toString('hex'), encryptedData);
-      const decodedData = opusScript.decode(decryptedData);
+      const decodedData = this.opus.decode(decryptedData);
 
       this.speaker?.write(decodedData, 'utf-8', (err) => {
         clearTimeout(timer);
@@ -99,4 +128,21 @@ export default class AudioService {
       });
     });
   }
+
+  destroy() {
+    this.mic?.stop();
+    this.mic?.stream().destroy();
+    this.speaker?.destroy();
+    console.log('destroy');
+  }
+
+  static Speaker() {
+    return new Speaker({
+      channels: 2,
+      sampleRate: 24000,
+      bitDepth: 16,
+    });
+  }
 }
+
+export default new AudioService();

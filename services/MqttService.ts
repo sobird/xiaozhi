@@ -1,7 +1,7 @@
 // https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh
 import mqtt, { MqttClient } from 'mqtt';
 
-import AudioService from './AudioService';
+import audioService, { AudioService } from './AudioService';
 import DgramService from './DgramService';
 import OtaService, { OtaInfo } from './OtaService';
 
@@ -17,7 +17,7 @@ export interface MqttMessage {
     nonce: string;
   },
   audio_params: {
-    format: string;
+    format?: string;
     sample_rate: 8000 | 12000 | 16000 | 24000 | 48000;
     channels: number;
     frame_duration: number;
@@ -31,13 +31,15 @@ const HELLO_MESSAGE = {
   transport: 'udp',
   audio_params: {
     format: 'opus',
-    sample_rate: 16000,
-    channels: 1,
+    sample_rate: 48000,
+    channels: 2,
     frame_duration: 60,
   },
 };
 
-const audioService = new AudioService();
+DgramService.on('connect', () => {
+  console.log('connected dgram service');
+});
 
 export default class MqttService {
   mqttClient!: MqttClient;
@@ -55,10 +57,13 @@ export default class MqttService {
 
   ttsConnected: boolean = false;
 
+  audioService: AudioService;
+
   async start() {
     const otaInfo = await OtaService.otaInfo();
     const mqttOption = otaInfo.mqtt;
     console.log('otaInfo', otaInfo);
+
     const mqttClient = mqtt.connect(`mqtts://${mqttOption?.endpoint}:8883`, {
       clientId: mqttOption.client_id,
       username: mqttOption.username,
@@ -68,7 +73,6 @@ export default class MqttService {
       console.log('Connected to MQTT server');
       mqttClient.subscribe(mqttOption.subscribe_topic);
     });
-
     mqttClient.on('message', (topic, message) => {
       const msg: MqttMessage = JSON.parse(message.toString());
       console.log('message:', msg);
@@ -78,6 +82,7 @@ export default class MqttService {
           this.hello(topic, msg);
           break;
         case 'tts':
+          this.tts(topic, msg);
           break;
         case 'goodbye':
           this.goodbye(topic, msg);
@@ -85,7 +90,6 @@ export default class MqttService {
         default:
       }
     });
-
     mqttClient.on('error', (error) => {
       console.log('mqtt error', error);
     });
@@ -102,16 +106,18 @@ export default class MqttService {
     DgramService.connect(udp.port, udp.server, () => {
       console.log('tts connected');
       // if (!this.sendAudioThread) {
-      this.sendAudioThread = setImmediate(() => {
-        audioService.sendAudio(message);
-      });
+      // this.sendAudioThread = setImmediate(() => {
+      //   audioService.sendAudio(message);
+      // });
       // }
 
       // if (!this.playAudioThread) {
-      this.playAudioThread = setImmediate(() => {
-        audioService.playAudio(message);
-      });
+      // this.playAudioThread = setImmediate(() => {
+      //   audioService.playAudio(message);
+      // });
       // }
+
+      audioService.start(message);
 
       this.ttsConnected = true;
     });
@@ -122,6 +128,7 @@ export default class MqttService {
     if (message.session_id === this.aesOpusInfo?.session_id) {
       this.aesOpusInfo = undefined;
       DgramService.disconnect();
+      audioService.destroy();
       this.ttsConnected = false;
     }
   }
