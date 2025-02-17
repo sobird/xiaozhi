@@ -1,3 +1,5 @@
+#!/usr/bin/env tsx
+
 /**
  * Run your XiaoZhi AI on the terminal
  *

@@ -14,7 +14,20 @@ Run your XiaoZhi AI on the terminal
 [size]: https://packagephobia.com/badge?p=@sobird/xiaozhi
 [size-url]: https://packagephobia.com/result?p=@sobird/xiaozhi
 
+## 本地开发
+```sh
+# 安装依赖
+pnpm install
 
+# 运行项目
+pnpm start
+
+# 或者 将命令安装到全局
+npm link
+
+# 在终端运行
+xzai
+```
 
 ## FAQ
 

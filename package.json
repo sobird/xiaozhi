@@ -4,7 +4,11 @@
   "description": "Run your XiaoZhi AI on the terminal",
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "xzai": "./index.ts"
+  },
   "scripts": {
+    "start": "tsx index.ts",
     "build": "rollup -c --environment NODE_ENV:production",
     "eslint:fix": "eslint src --fix",
     "test": "echo \"husky test scripts\"",
