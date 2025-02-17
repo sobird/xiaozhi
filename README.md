@@ -14,3 +14,14 @@ Run your XiaoZhi AI on the terminal
 [size]: https://packagephobia.com/badge?p=@sobird/xiaozhi
 [size-url]: https://packagephobia.com/result?p=@sobird/xiaozhi
 
+
+
+## FAQ
+
+* 使用`ora`后，设置的`process.stdin.on('keypress', (str, key) => {});`键盘监听时间无效
+```ts
+const spinner = ora({
+  // 此处配置必须false，防止ora阻止用户的键盘输入事件
+  discardStdin: false,
+});
+```
