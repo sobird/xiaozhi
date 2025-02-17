@@ -31,7 +31,7 @@ xzai
 
 ## FAQ
 
-* 使用`ora`后，设置的`process.stdin.on('keypress', (str, key) => {});`键盘监听时间无效
+* 使用`ora`后，设置的`process.stdin.on('keypress', (str, key) => {});`键盘监听事件无效
 ```ts
 const spinner = ora({
   // 此处配置必须false，防止ora阻止用户的键盘输入事件

@@ -64,7 +64,7 @@ export default class MqttService {
       password: mqttOption.password,
     });
     mqttClient.on('connect', () => {
-      console.log('Connected to MQTT server');
+      // console.log('Connected to MQTT server');
       mqttClient.subscribe(mqttOption.subscribe_topic);
     });
     mqttClient.on('message', (topic, message) => {
@@ -90,6 +90,8 @@ export default class MqttService {
 
     this.mqttClient = mqttClient;
     this.mqttOption = mqttOption;
+
+    return this;
   }
 
   private hello(topic: string, message: MqttMessage) {
@@ -122,7 +124,7 @@ export default class MqttService {
     }
 
     // 打断小智说话
-    if (ttsState === 'start' || ttsState === 'entence_start') {
+    if (ttsState === 'start' || ttsState === 'sentence_start') {
       this.publish({ type: 'abort' });
     }
 
@@ -155,6 +157,7 @@ export default class MqttService {
 
   // 连接建立后，客户端发送一个 JSON 格式的 "hello" 消息，初始化服务器端的音频解码器。
   publish(message: object) {
+    console.log('message', message);
     // console.log('publish message:', message);
     this.mqttClient.publish(this.mqttOption.publish_topic, JSON.stringify(message));
   }

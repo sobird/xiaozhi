@@ -14,6 +14,7 @@ import { randomWave } from '@/utils/randomWave';
 import MqttService from './services/MqttService';
 
 const mqttService = new MqttService();
+// 无需await
 mqttService.start();
 
 const spinner = ora({
@@ -30,6 +31,12 @@ const spinner = ora({
   },
 });
 
+const spaceSpinner = ora({
+  discardStdin: false,
+  text: '请按下空格键开始聊天...',
+  color: 'magenta',
+}).start();
+
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
   process.stdin.setRawMode(true);
@@ -40,15 +47,17 @@ let space = false;
 process.stdin.on('keypress', (str, key) => {
   if (key.name === 'space') {
     space = !space;
-  }
 
-  if (space) {
-    mqttService.startListening();
-    spinner.start();
-    // keypress
-  } else {
-    spinner.stop();
-    mqttService.stopListening();
+    if (space) {
+      mqttService.startListening();
+      spinner.start();
+      spaceSpinner.stop();
+      // keypress
+    } else {
+      spinner.stop();
+      spaceSpinner.start();
+      mqttService.stopListening();
+    }
   }
 
   // 按下 Ctrl+C 退出
@@ -57,10 +66,8 @@ process.stdin.on('keypress', (str, key) => {
   }
 });
 
-console.log('按空格键开始聊天...');
+// console.log('按空格键开始聊天...');
 
 process.on('SIGINT', () => {
-  // console.log('\nReceived SIGINT. Exiting...');
-  // spinner.stop(); // 停止 ora 动画
   process.exit(); // 退出进程
 });

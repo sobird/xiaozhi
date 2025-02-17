@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@rollup/plugin-replace':
-        specifier: ^6.0.2
-        version: 6.0.2(rollup@4.34.7)
       mqtt:
         specifier: ^5.10.3
         version: 5.10.3
@@ -42,6 +39,9 @@ importers:
       '@rollup/plugin-node-resolve':
         specifier: ^15.3.1
         version: 15.3.1(rollup@4.34.7)
+      '@rollup/plugin-replace':
+        specifier: ^6.0.2
+        version: 6.0.2(rollup@4.34.7)
       '@rollup/plugin-terser':
         specifier: ^0.4.4
         version: 0.4.4(rollup@4.34.7)
