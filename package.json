@@ -1,7 +1,7 @@
 {
-  "name": "@sobird/npm-template",
-  "version": "1.2.0",
-  "description": "npm template",
+  "name": "@sobird/xiaozhi",
+  "version": "0.0.1",
+  "description": "Run your XiaoZhi AI on the terminal",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -16,11 +16,10 @@
     "prepare": "husky"
   },
   "keywords": [
-    "npm",
-    "npm-template",
+    "xiaozhi",
+    "ai",
     "typescript",
-    "vitest",
-    "rollup"
+    "terminal"
   ],
   "author": "sobird",
   "license": "MIT",
