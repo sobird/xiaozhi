@@ -18,6 +18,7 @@ function clearScreen() {
 // 主循环
 function animateWave() {
   clearScreen();
+  console.log('1212', 1212);
   console.log(generateRandomWave());
 }
 
@@ -27,11 +28,20 @@ let timer: NodeJS.Timeout;
 export const start = () => {
   clearScreen();
   timer = setInterval(animateWave, 100);
+
+  console.log('start');
 };
 
 export const stop = () => {
   clearScreen();
   clearInterval(timer);
+  console.log('stop');
 };
 
 export default { start, stop };
+
+// start();
+
+// setTimeout(() => {
+//   stop();
+// }, 5000);

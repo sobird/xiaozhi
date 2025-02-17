@@ -37,4 +37,4 @@ process.stdin.on('keypress', (str, key) => {
   }
 });
 
-console.log('按下空号键...');
+console.log('按空格键开始聊天...');

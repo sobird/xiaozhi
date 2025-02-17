@@ -63,7 +63,9 @@ export class AudioService {
     // voiceWave.start();
 
     mic.stream().on('data', (data: Buffer) => {
-      const { key, nonce } = this.options.udp;
+      const {
+        key, nonce, port, server,
+      } = this.options.udp;
 
       const encodedPacket = opusScript.encode(data, frameSize);
       const encodedDataLengthHex = encodedPacket.length.toString(16).padStart(4, '0');
@@ -76,7 +78,7 @@ export class AudioService {
       const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
 
       console.log('packet', packet);
-      DgramService.send(packet, (err) => {
+      DgramService.send(packet, port, server, (err) => {
         if (err) console.error('Error sending audio:', err);
       });
     });
@@ -123,9 +125,9 @@ export class AudioService {
   }
 
   destroy() {
-    this.mic?.stop();
-    this.mic?.stream().destroy();
-    this.speaker?.destroy();
+    // this.mic?.stop();
+    // this.mic?.stream().destroy();
+    // this.speaker?.destroy();
     console.log('destroy');
   }
 

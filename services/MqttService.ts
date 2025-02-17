@@ -1,7 +1,7 @@
 // https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh
 import mqtt, { MqttClient } from 'mqtt';
 
-import audioService, { AudioService } from './AudioService';
+import audioService from './AudioService';
 import DgramService from './DgramService';
 import OtaService, { OtaInfo } from './OtaService';
 
@@ -51,13 +51,7 @@ export default class MqttService {
   // 对话状态
   ttsState = '';
 
-  sendAudioThread: NodeJS.Immediate;
-
-  playAudioThread: NodeJS.Immediate;
-
-  ttsConnected: boolean = false;
-
-  audioService: AudioService;
+  // ttsConnected: boolean = false;
 
   async start() {
     const otaInfo = await OtaService.otaInfo();
@@ -100,36 +94,17 @@ export default class MqttService {
 
   private hello(topic: string, message: MqttMessage) {
     this.aesOpusInfo = message;
-    const { udp } = message;
 
-    // 建立语音聊天通道
-    DgramService.connect(udp.port, udp.server, () => {
-      console.log('tts connected');
-      // if (!this.sendAudioThread) {
-      // this.sendAudioThread = setImmediate(() => {
-      //   audioService.sendAudio(message);
-      // });
-      // }
-
-      // if (!this.playAudioThread) {
-      // this.playAudioThread = setImmediate(() => {
-      //   audioService.playAudio(message);
-      // });
-      // }
-
-      audioService.start(message);
-
-      this.ttsConnected = true;
-    });
+    audioService.start(message);
   }
 
   // 结束对话
   goodbye(topic: string, message: MqttMessage) {
     if (message.session_id === this.aesOpusInfo?.session_id) {
       this.aesOpusInfo = undefined;
-      DgramService.disconnect();
-      audioService.destroy();
-      this.ttsConnected = false;
+      // DgramService.disconnect();
+      // audioService.destroy();
+      // this.ttsConnected = false;
     }
   }
 
@@ -142,7 +117,7 @@ export default class MqttService {
     const { aesOpusInfo, ttsState } = this;
     console.log('aesOpusInfo', aesOpusInfo);
     // 开启新的对话
-    if (!this.ttsConnected && !aesOpusInfo?.session_id) {
+    if (!aesOpusInfo?.session_id) {
       this.publish(HELLO_MESSAGE);
     }
 
@@ -159,9 +134,9 @@ export default class MqttService {
         state: 'start',
         mode: 'manual',
       });
-
-      audioService.resumeSendAudio();
     }
+
+    audioService.resumeSendAudio();
   }
 
   // 对用户来说，就是停止说话
