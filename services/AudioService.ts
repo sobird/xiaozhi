@@ -24,15 +24,10 @@ export class AudioService {
 
   sequence = 0;
 
-  opus: OpusScript;
-
   start(options: MqttMessage) {
     this.options = options;
     this.createMicrophone();
-    // this.createSpeaker();
-
-    const { sample_rate: sampleRate, channels } = AUDIO_PARAMS;
-    this.opus = new OpusScript(sampleRate, channels, OpusScript.Application.AUDIO);
+    this.createSpeaker();
 
     this.sequence = 0;
   }
@@ -57,6 +52,8 @@ export class AudioService {
 
     const { sample_rate: sampleRate, channels, frame_duration: frameDuration } = AUDIO_PARAMS;
     const frameSize = (sampleRate * frameDuration) / 1000;
+    // 写死
+    const opusScript = new OpusScript(sampleRate, channels, OpusScript.Application.AUDIO);
 
     const mic = Record.record({
       sampleRate,
@@ -68,7 +65,7 @@ export class AudioService {
     mic.stream().on('data', (data: Buffer) => {
       const { key, nonce } = this.options.udp;
 
-      const encodedPacket = this.opus.encode(data, frameSize);
+      const encodedPacket = opusScript.encode(data, frameSize);
       const encodedDataLengthHex = encodedPacket.length.toString(16).padStart(4, '0');
       this.sequence += 1;
       const sequenceHex = this.sequence.toString(16).padStart(8, '0');
@@ -92,28 +89,30 @@ export class AudioService {
   }
 
   // 启动扬声器
-  createSpeaker(opusInfo: MqttMessage) {
+  createSpeaker() {
     if (this.speaker) {
       return;
     }
 
-    // const { sample_rate: sampleRate, frame_duration: frameDuration } = opusInfo.audio_params;
+    // const { sample_rate: sampleRate, frame_duration: frameDuration } = AUDIO_PARAMS;
     // const frameNum = Math.floor(frameDuration / (1000 / sampleRate));
 
     let timer: NodeJS.Timeout;
     this.speaker = AudioService.Speaker();
 
-    console.log('create Speaker opusInfo', opusInfo);
+    // 写死
+    const opusScript = new OpusScript(24000, 2, OpusScript.Application.AUDIO);
 
     DgramService.on('message', (data) => {
-      const { key, nonce } = opusInfo.udp;
+      const { key } = this.options.udp;
       console.log('speaker data', data);
 
       const splitNonce = data.subarray(0, 16);
       const encryptedData = data.subarray(16);
       const decryptedData = aesCtrDecrypt(key, splitNonce.toString('hex'), encryptedData);
-      const decodedData = this.opus.decode(decryptedData);
+      const decodedData = opusScript.decode(decryptedData);
 
+      console.log('decodedData', decodedData);
       this.speaker?.write(decodedData, 'utf-8', (err) => {
         clearTimeout(timer);
         timer = setTimeout(() => {
