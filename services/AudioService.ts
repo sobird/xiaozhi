@@ -1,6 +1,5 @@
 import Record, { Recording } from 'node-record-lpcm16';
 import OpusScript from 'opusscript';
-import ora from 'ora';
 import Speaker from 'speaker';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
@@ -14,6 +13,7 @@ const AUDIO_PARAMS: MqttMessage['audio_params'] = {
   channels: 2,
   frame_duration: 20,
 };
+
 // 单例
 export class AudioService {
   options: MqttMessage;
@@ -61,6 +61,7 @@ export class AudioService {
     });
 
     // voiceWave.start();
+    // spinner.start();
 
     mic.stream().on('data', (data: Buffer) => {
       const {
@@ -77,7 +78,7 @@ export class AudioService {
       const encryptedData = aesCtrEncrypt(key, newNonce, encodedPacket);
       const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
 
-      console.log('packet', packet);
+      // console.log('packet', packet);
       DgramService.send(packet, port, server, (err) => {
         if (err) console.error('Error sending audio:', err);
       });
@@ -107,14 +108,14 @@ export class AudioService {
 
     DgramService.on('message', (data) => {
       const { key } = this.options.udp;
-      console.log('speaker data', data);
+      // console.log('speaker data', data);
 
       const splitNonce = data.subarray(0, 16);
       const encryptedData = data.subarray(16);
       const decryptedData = aesCtrDecrypt(key, splitNonce.toString('hex'), encryptedData);
       const decodedData = opusScript.decode(decryptedData);
 
-      console.log('decodedData', decodedData);
+      // console.log('decodedData', decodedData);
       this.speaker?.write(decodedData, 'utf-8', (err) => {
         clearTimeout(timer);
         timer = setTimeout(() => {
