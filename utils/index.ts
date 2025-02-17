@@ -1,0 +1,1 @@
+export { macAddress } from './macAddress';
