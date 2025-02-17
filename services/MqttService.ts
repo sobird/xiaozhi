@@ -100,17 +100,18 @@ export default class MqttService {
 
     // 建立语音聊天通道
     DgramService.connect(udp.port, udp.server, () => {
-      if (!this.sendAudioThread) {
-        this.sendAudioThread = setImmediate(() => {
-          audioService.sendAudio(message);
-        });
-      }
+      console.log('tts connected');
+      // if (!this.sendAudioThread) {
+      this.sendAudioThread = setImmediate(() => {
+        audioService.sendAudio(message);
+      });
+      // }
 
-      if (!this.playAudioThread) {
-        this.playAudioThread = setImmediate(() => {
-          audioService.playAudio(message);
-        });
-      }
+      // if (!this.playAudioThread) {
+      this.playAudioThread = setImmediate(() => {
+        audioService.playAudio(message);
+      });
+      // }
 
       this.ttsConnected = true;
     });
@@ -120,6 +121,8 @@ export default class MqttService {
   goodbye(topic: string, message: MqttMessage) {
     if (message.session_id === this.aesOpusInfo?.session_id) {
       this.aesOpusInfo = undefined;
+      DgramService.disconnect();
+      this.ttsConnected = false;
     }
   }
 
@@ -130,7 +133,7 @@ export default class MqttService {
   // 对用户来说，就是开始说话
   startListening() {
     const { aesOpusInfo, ttsState } = this;
-
+    console.log('aesOpusInfo', aesOpusInfo);
     // 开启新的对话
     if (!this.ttsConnected && !aesOpusInfo?.session_id) {
       this.publish(HELLO_MESSAGE);
@@ -170,7 +173,7 @@ export default class MqttService {
 
   // 连接建立后，客户端发送一个 JSON 格式的 "hello" 消息，初始化服务器端的音频解码器。
   publish(message: object) {
-    console.log(this.mqttOption.publish_topic, message);
+    console.log('publish message:', message);
     this.mqttClient.publish(this.mqttOption.publish_topic, JSON.stringify(message));
   }
 }

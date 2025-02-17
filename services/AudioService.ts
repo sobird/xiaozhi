@@ -1,14 +1,13 @@
 import Record, { Recording } from 'node-record-lpcm16';
 import OpusScript from 'opusscript';
+import ora from 'ora';
 import Speaker from 'speaker';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
+import voiceWave from '@/utils/voiceWave';
 
 import DgramService from './DgramService';
 import { MqttMessage } from './MqttService';
-
-// const mic = Record.record({});
-// const st = mic.stream();
 
 let localSequence = 0;
 
@@ -16,6 +15,8 @@ export default class AudioService {
   mic?: Recording;
 
   speaker?: Speaker;
+
+  listening = false;
 
   sendAudio(opusInfo: MqttMessage) {
     const { key, nonce } = opusInfo.udp;
@@ -32,6 +33,8 @@ export default class AudioService {
       threshold: 0.5,
     });
 
+    // voiceWave.start();
+
     mic.stream().on('data', (data: Buffer) => {
       const encodedPacket = encoder.encode(data, frameSize);
       const encodedDataLengthHex = encodedPacket.length.toString(16).padStart(4, '0');
@@ -42,7 +45,7 @@ export default class AudioService {
       + encodedDataLengthHex + nonce.slice(8, 24) + localSequenceHex;
       const encryptedData = aesCtrEncrypt(key, newNonce, encodedPacket);
       const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
-      console.log('packet message', packet);
+
       // console.log('packet', packet);
       DgramService.send(packet, (err) => {
         if (err) console.error('Error sending audio:', err);
@@ -59,6 +62,8 @@ export default class AudioService {
   // 用户暂停说话
   pauseSendAudio() {
     this.mic?.pause();
+    // voiceWave.stop();
+
     this.speaker = new Speaker({
       channels: 2, // 2 channels
       bitDepth: 16, // 16-bit samples
@@ -67,6 +72,8 @@ export default class AudioService {
   }
 
   resumeSendAudio() {
+    this.listening = true;
+    // voiceWave.start();
     this.mic?.resume();
   }
 
@@ -74,7 +81,6 @@ export default class AudioService {
     const { key, nonce } = opusInfo.udp;
     const { sample_rate: sampleRate, frame_duration: frameDuration } = opusInfo.audio_params;
     const frameNum = Math.floor(frameDuration / (1000 / sampleRate));
-    console.log('frameNum', frameNum);
     const opusScript = new OpusScript(sampleRate, 2, OpusScript.Application.AUDIO);
 
     let timer: NodeJS.Timeout;
