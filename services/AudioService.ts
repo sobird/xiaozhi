@@ -12,7 +12,7 @@ import { MqttMessage } from './MqttService';
 const AUDIO_PARAMS: MqttMessage['audio_params'] = {
   sample_rate: 48000,
   channels: 2,
-  frame_duration: 60,
+  frame_duration: 20,
 };
 // 单例
 export class AudioService {
@@ -54,10 +54,8 @@ export class AudioService {
     if (this.mic) {
       return;
     }
-    const sampleRate = 48000;
-    const frameDuration = 20;
-    const channels = 2;
-    // const { sample_rate: sampleRate, channels, frame_duration: frameDuration } = this.options.audio_params;
+
+    const { sample_rate: sampleRate, channels, frame_duration: frameDuration } = AUDIO_PARAMS;
     const frameSize = (sampleRate * frameDuration) / 1000;
 
     const mic = Record.record({
@@ -65,13 +63,9 @@ export class AudioService {
       channels,
     });
 
-    const encoder = new OpusScript(48000, 2, OpusScript.Application.AUDIO);
-
     // voiceWave.start();
 
     mic.stream().on('data', (data: Buffer) => {
-      console.log('mic data', data);
-
       const { key, nonce } = this.options.udp;
 
       const encodedPacket = this.opus.encode(data, frameSize);
@@ -84,7 +78,7 @@ export class AudioService {
       const encryptedData = aesCtrEncrypt(key, newNonce, encodedPacket);
       const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
 
-      // console.log('packet', packet);
+      console.log('packet', packet);
       DgramService.send(packet, (err) => {
         if (err) console.error('Error sending audio:', err);
       });

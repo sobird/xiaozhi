@@ -33,7 +33,7 @@ const HELLO_MESSAGE = {
     format: 'opus',
     sample_rate: 48000,
     channels: 2,
-    frame_duration: 60,
+    frame_duration: 20,
   },
 };
 
