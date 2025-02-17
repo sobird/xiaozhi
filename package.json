@@ -28,6 +28,7 @@
   "author": "sobird",
   "license": "MIT",
   "dependencies": {
+    "@rollup/plugin-replace": "^6.0.2",
     "mqtt": "^5.10.3",
     "node-record-lpcm16": "^1.0.1",
     "opusscript": "^0.1.1",
