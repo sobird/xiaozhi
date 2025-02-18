@@ -38,3 +38,40 @@ const spinner = ora({
   discardStdin: false,
 });
 ```
+
+* 按下说话报错，Error: spawn sox ENOENT，详细信息如下
+```sh
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: spawn sox ENOENT
+    at ChildProcess._handle.onexit (node:internal/child_process:286:19)
+    at onErrorNT (node:internal/child_process:484:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+Emitted 'error' event on ChildProcess instance at:
+    at ChildProcess._handle.onexit (node:internal/child_process:292:12)
+    at onErrorNT (node:internal/child_process:484:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'spawn sox',
+  path: 'sox',
+  spawnargs: [
+    '--default-device',
+    '--no-show-progress',
+    '--rate',
+    48000,
+    '--channels',
+    2,
+    '--encoding',
+    'signed-integer',
+    '--bits',
+    '16',
+    '--type',
+    'wav',
+    '-'
+  ]
+}
+```
+
+电脑上没有安装sox，请自行根据系统选择安装对应的版本。
