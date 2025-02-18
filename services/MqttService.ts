@@ -142,7 +142,10 @@ export default class MqttService {
   }
 
   private tts(topic: string, message: MqttMessage) {
-    this.ttsState = message.state;
+    if (!message.text) {
+      this.ttsState = message.state;
+    }
+
     if (message.state === 'sentence_start') {
       const { llmMessage } = this;
       console.log(`${llmMessage?.text}`, `\x1b[95m${message.text}\x1b[0m\n`);
@@ -165,7 +168,7 @@ export default class MqttService {
     }
 
     // 打断小智说话
-    if (ttsState === 'start' || ttsState === 'sentence_start') {
+    if (ttsState === 'start') {
       this.publish({ type: 'abort' });
     }
 
