@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.js",
   "bin": {
-    "xzai": "./index.ts"
+    "xzai": "./dist/index.js"
   },
   "scripts": {
     "start": "tsx index.ts",
