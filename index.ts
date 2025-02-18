@@ -31,12 +31,6 @@ const spinner = ora({
   },
 });
 
-const spaceSpinner = ora({
-  discardStdin: false,
-  text: '请按下空格键开始聊天...',
-  color: 'magenta',
-}).start();
-
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
   process.stdin.setRawMode(true);
@@ -51,11 +45,10 @@ process.stdin.on('keypress', (str, key) => {
     if (space) {
       mqttService.startListening();
       spinner.start();
-      spaceSpinner.stop();
+
       // keypress
     } else {
       spinner.stop();
-      spaceSpinner.start();
       mqttService.stopListening();
     }
   }
@@ -68,6 +61,6 @@ process.stdin.on('keypress', (str, key) => {
 
 // console.log('按空格键开始聊天...');
 
-process.on('SIGINT', () => {
-  process.exit(); // 退出进程
-});
+// process.on('SIGINT', () => {
+//   process.exit(); // 退出进程
+// });

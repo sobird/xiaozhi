@@ -32,7 +32,8 @@
     "node-record-lpcm16": "^1.0.1",
     "opusscript": "^0.1.1",
     "ora": "^8.2.0",
-    "speaker": "^0.5.5"
+    "speaker": "^0.5.5",
+    "string-width": "^7.2.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.7.1",
