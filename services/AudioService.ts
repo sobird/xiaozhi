@@ -1,3 +1,5 @@
+import { spawn } from 'node:child_process';
+
 import Speaker from '@sobird/speaker';
 import Record, { Recording } from 'node-record-lpcm16';
 import OpusScript from 'opusscript';
@@ -102,6 +104,18 @@ export class AudioService {
 
     let timer: NodeJS.Timeout;
     this.speaker = AudioService.Speaker();
+    const sox = spawn('sox', [
+      '-t', 'raw', // 指定输入格式为原始音频数据
+      '-r', '24000', // 采样率
+      '-b', '16', // 位深
+      '-c', '2', // 声道数
+      '-e', 'signed-integer',
+      '-', // 从标准输入读取数据
+      '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 输出到默认音频设备
+    ]);
+    sox.stderr.on('data', (data) => {
+      console.error(data.toString());
+    });
 
     // 写死
     const opusScript = new OpusScript(24000, 2, OpusScript.Application.AUDIO);
@@ -115,13 +129,14 @@ export class AudioService {
       const decryptedData = aesCtrDecrypt(key, splitNonce.toString('hex'), encryptedData);
       const decodedData = opusScript.decode(decryptedData);
 
+      sox.stdin.write(decodedData);
       // console.log('decodedData', decodedData);
-      this.speaker?.write(decodedData, 'utf-8', (err) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          this.speaker?.close(true);
-        }, 1000);
-      });
+      // this.speaker?.write(decodedData, 'utf-8', (err) => {
+      //   clearTimeout(timer);
+      //   timer = setTimeout(() => {
+      //     this.speaker?.close(true);
+      //   }, 1000);
+      // });
     });
   }
 
