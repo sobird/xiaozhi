@@ -1,6 +1,6 @@
+import Speaker from '@sobird/speaker';
 import Record, { Recording } from 'node-record-lpcm16';
 import OpusScript from 'opusscript';
-import Speaker from 'speaker';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
 import voiceWave from '@/utils/voiceWave';
@@ -16,7 +16,7 @@ const AUDIO_PARAMS: MqttMessage['audio_params'] = {
 
 // 单例
 export class AudioService {
-  options: MqttMessage;
+  options!: MqttMessage;
 
   mic?: Recording;
 
@@ -120,7 +120,7 @@ export class AudioService {
         clearTimeout(timer);
         timer = setTimeout(() => {
           this.speaker?.close(true);
-        }, 500);
+        }, 1000);
       });
     });
   }

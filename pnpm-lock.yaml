@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@sobird/speaker':
+        specifier: ^0.5.5
+        version: 0.5.5
       mqtt:
         specifier: ^5.10.3
         version: 5.10.3
@@ -20,9 +23,6 @@ importers:
       ora:
         specifier: ^8.2.0
         version: 8.2.0
-      speaker:
-        specifier: ^0.5.5
-        version: 0.5.5
       string-width:
         specifier: ^7.2.0
         version: 7.2.0
@@ -1205,6 +1205,10 @@ packages:
 
   '@rushstack/eslint-patch@1.10.5':
     resolution: {integrity: sha512-kkKUDVlII2DQiKy7UstOR1ErJP8kUKAQ4oa+SQtM0K+lPdmmjj0YnnxBgtTVYH7mUKtbsxeFC9y0AmK7Yb78/A==}
+
+  '@sobird/speaker@0.5.5':
+    resolution: {integrity: sha512-79SssaLXmYWs7/agypleou9mzmOQx661FIdCbKBPInqtcBp3kHuOdju6NrG0PJTVwimckV7qB2Za9VsUsbVJpg==}
+    engines: {node: '>=8.6'}
 
   '@types/conventional-commits-parser@5.0.1':
     resolution: {integrity: sha512-7uz5EHdzz2TqoMfV7ee61Egf5y6NkcO4FB/1iCCQnbeiI1F3xzv3vK5dBCXUCLQgGYS+mUeigK1iKQzvED+QnQ==}
@@ -3056,10 +3060,6 @@ packages:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
 
-  speaker@0.5.5:
-    resolution: {integrity: sha512-IBeMZUITigYBO139h0+1MAgBHNZF55GFJN4U/Box35Sg49cfqYkbCO92TXoCUy22Ast08zfqKuXLvPxq9CWwLw==}
-    engines: {node: '>=8.6'}
-
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
@@ -4570,6 +4570,14 @@ snapshots:
   '@rtsao/scc@1.1.0': {}
 
   '@rushstack/eslint-patch@1.10.5': {}
+
+  '@sobird/speaker@0.5.5':
+    dependencies:
+      bindings: 1.5.0
+      buffer-alloc: 1.2.0
+      debug: 4.4.0
+    transitivePeerDependencies:
+      - supports-color
 
   '@types/conventional-commits-parser@5.0.1':
     dependencies:
@@ -6803,14 +6811,6 @@ snapshots:
       source-map: 0.6.1
 
   source-map@0.6.1: {}
-
-  speaker@0.5.5:
-    dependencies:
-      bindings: 1.5.0
-      buffer-alloc: 1.2.0
-      debug: 4.4.0
-    transitivePeerDependencies:
-      - supports-color
 
   split2@4.2.0: {}
 
