@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 
 import Speaker from '@sobird/speaker';
 import Record, { Recording } from 'node-record-lpcm16';
@@ -20,7 +20,7 @@ const AUDIO_PARAMS: MqttMessage['audio_params'] = {
 export class AudioService {
   options!: MqttMessage;
 
-  mic?: Recording;
+  mic?: ChildProcessWithoutNullStreams;
 
   speaker?: Speaker;
 
@@ -36,14 +36,16 @@ export class AudioService {
 
   // 用户暂停说话
   pauseSendAudio() {
-    this.mic?.pause();
+    this.mic?.kill('SIGSTOP');
+    this.mic?.stdout.pause();
     // voiceWave.stop();
     this.speaker = AudioService.Speaker();
   }
 
   resumeSendAudio() {
+    this.mic?.kill('SIGCONT');
     // voiceWave.start();
-    this.mic?.resume();
+    this.mic?.stdout.resume();
   }
 
   // 启动麦克风
@@ -57,15 +59,39 @@ export class AudioService {
     // 写死
     const opusScript = new OpusScript(sampleRate, channels, OpusScript.Application.AUDIO);
 
-    const mic = Record.record({
-      sampleRate,
-      channels,
+    // const mic = Record.record({
+    //   sampleRate,
+    //   channels,
+    // });
+
+    const sox = spawn('sox', [
+      '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 捕获默认麦克风音频
+      '-t', 'raw', // 指定输入格式为原始音频数据
+      '-r', '48000', // 采样率
+      '-b', '16', // 位深
+      '-c', '2', // 声道数
+      '-e', 'signed-integer',
+      '-', // 从标准输入读取数据
+    ], { stdio: 'pipe' });
+
+    const mic = sox.stdout;
+
+    sox.stderr.on('data', (chunk) => {
+      console.log(chunk.toString());
     });
 
     // voiceWave.start();
     // spinner.start();
 
-    mic.stream().on('data', (data: Buffer) => {
+    // mic.on('readable', () => {
+    //   console.log('有数据可读');
+    //   const chunk = mic.read();
+    //   while (chunk !== null) {
+    //     console.log(`读取到 ${chunk.length} 字节的数据`);
+    //   }
+    // });
+
+    mic.on('data', (data: Buffer) => {
       const {
         key, nonce, port, server,
       } = this.options.udp;
@@ -86,11 +112,11 @@ export class AudioService {
       });
     });
 
-    mic.stream().on('error', (err) => {
+    mic.on('error', (err) => {
       console.error(`send audio error: ${err}`);
     });
 
-    this.mic = mic;
+    this.mic = sox;
   }
 
   // 启动扬声器
