@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/sobird/xiaozhi/compare/v1.0.1...v1.0.2) (2025-02-18)
+
+
+### Bug Fixes
+
+* npm publish script ([6d20a63](https://github.com/sobird/xiaozhi/commit/6d20a63c869f1848304ca557991cb513b1d2a7c2))
+
 ## [1.0.1](https://github.com/sobird/xiaozhi/compare/v1.0.0...v1.0.1) (2025-02-18)
 
 
