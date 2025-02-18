@@ -1,7 +1,5 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 
-import Speaker from '@sobird/speaker';
-import Record, { Recording } from 'node-record-lpcm16';
 import OpusScript from 'opusscript';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
@@ -22,7 +20,7 @@ export class AudioService {
 
   mic?: ChildProcessWithoutNullStreams;
 
-  speaker?: Speaker;
+  speaker?: ChildProcessWithoutNullStreams;
 
   sequence = 0;
 
@@ -39,7 +37,6 @@ export class AudioService {
     this.mic?.kill('SIGSTOP');
     this.mic?.stdout.pause();
     // voiceWave.stop();
-    this.speaker = AudioService.Speaker();
   }
 
   resumeSendAudio() {
@@ -67,18 +64,18 @@ export class AudioService {
     const sox = spawn('sox', [
       '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 捕获默认麦克风音频
       '-t', 'raw', // 指定输入格式为原始音频数据
-      '-r', '48000', // 采样率
+      '-r', `${sampleRate}`, // 采样率
       '-b', '16', // 位深
-      '-c', '2', // 声道数
+      '-c', `${channels}`, // 声道数
       '-e', 'signed-integer',
       '-', // 从标准输入读取数据
     ], { stdio: 'pipe' });
 
     const mic = sox.stdout;
 
-    sox.stderr.on('data', (chunk) => {
-      console.log(chunk.toString());
-    });
+    // sox.stderr.on('data', (chunk) => {
+    //   console.log(chunk.toString());
+    // });
 
     // voiceWave.start();
     // spinner.start();
@@ -128,23 +125,24 @@ export class AudioService {
     // const { sample_rate: sampleRate, frame_duration: frameDuration } = AUDIO_PARAMS;
     // const frameNum = Math.floor(frameDuration / (1000 / sampleRate));
 
-    let timer: NodeJS.Timeout;
-    this.speaker = AudioService.Speaker();
+    const sampleRate = 48000;
+    const channels = 1;
+
     const sox = spawn('sox', [
       '-t', 'raw', // 指定输入格式为原始音频数据
-      '-r', '24000', // 采样率
+      '-r', `${sampleRate}`, // 采样率
       '-b', '16', // 位深
-      '-c', '2', // 声道数
+      '-c', `${channels}`, // 声道数
       '-e', 'signed-integer',
       '-', // 从标准输入读取数据
       '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 输出到默认音频设备
     ]);
-    sox.stderr.on('data', (data) => {
-      console.error(data.toString());
-    });
+    // sox.stderr.on('data', (data) => {
+    //   console.error(data.toString());
+    // });
 
     // 写死
-    const opusScript = new OpusScript(24000, 2, OpusScript.Application.AUDIO);
+    const opusScript = new OpusScript(sampleRate, channels, OpusScript.Application.AUDIO);
 
     DgramService.on('message', (data) => {
       const { key } = this.options.udp;
@@ -156,29 +154,9 @@ export class AudioService {
       const decodedData = opusScript.decode(decryptedData);
 
       sox.stdin.write(decodedData);
-      // console.log('decodedData', decodedData);
-      // this.speaker?.write(decodedData, 'utf-8', (err) => {
-      //   clearTimeout(timer);
-      //   timer = setTimeout(() => {
-      //     this.speaker?.close(true);
-      //   }, 1000);
-      // });
     });
-  }
 
-  destroy() {
-    // this.mic?.stop();
-    // this.mic?.stream().destroy();
-    // this.speaker?.destroy();
-    console.log('destroy');
-  }
-
-  static Speaker() {
-    return new Speaker({
-      channels: 2,
-      sampleRate: 24000,
-      bitDepth: 16,
-    });
+    this.speaker = sox;
   }
 }
 

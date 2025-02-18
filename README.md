@@ -75,3 +75,32 @@ Emitted 'error' event on ChildProcess instance at:
 ```
 
 电脑上没有安装sox，请自行根据系统选择安装对应的版本。
+
+* 查看电脑音频设备信息
+```sh
+# macOS 执行下面命令
+$ system_profiler SPAudioDataType
+Audio:
+
+    Devices:
+
+        Built-in Microphone:
+
+          Default Input Device: Yes
+          Input Channels: 2
+          Manufacturer: Apple Inc.
+          Current SampleRate: 44100
+          Transport: Built-in
+          Input Source: Internal Microphone
+
+        Built-in Output:
+
+          Default Output Device: Yes
+          Default System Output Device: Yes
+          Manufacturer: Apple Inc.
+          Output Channels: 2
+          Current SampleRate: 44100
+          Transport: Built-in
+          Output Source: Internal Speakers
+
+```

@@ -30,10 +30,8 @@
   "license": "MIT",
   "dependencies": {
     "mqtt": "^5.10.3",
-    "node-record-lpcm16": "^1.0.1",
     "opusscript": "^0.1.1",
     "ora": "^8.2.0",
-    "@sobird/speaker": "^0.5.5",
     "string-width": "^7.2.0"
   },
   "devDependencies": {
