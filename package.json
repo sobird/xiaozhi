@@ -1,6 +1,6 @@
 {
   "name": "@sobird/xiaozhi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Run your XiaoZhi AI on the terminal",
   "type": "module",
   "main": "index.js",

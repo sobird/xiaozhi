@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/sobird/xiaozhi/compare/v1.0.0...v1.0.1) (2025-02-18)
+
+
+### Bug Fixes
+
+* update prepublish script ([83934d0](https://github.com/sobird/xiaozhi/commit/83934d00d43fe0421ac1f1576e0e59cd7d9da007))
+
 ## 1.0.0 (2025-02-18)
 
 
