@@ -77,6 +77,7 @@ export default (env) => {
           delimiters: ['', ''],
           values: {
             '#!/usr/bin/env tsx': '#!/usr/bin/env node',
+            '"xzai": "./index.ts"': '"xzai": "./dist/index.js"',
           },
           preventAssignment: true,
         }),

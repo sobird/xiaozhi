@@ -17,7 +17,8 @@
     "version": "git add -A .",
     "postversion": "git push && git push --tags",
     "postinstall": "echo \"postinstall\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "tsx scripts/prepublish.ts"
   },
   "keywords": [
     "xiaozhi",
