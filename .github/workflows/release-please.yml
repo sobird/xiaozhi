@@ -62,6 +62,6 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         run: |
           pnpm run build
-          npm publish --access public
+          npm publish --access public --registry=https://registry.npmjs.org/
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
