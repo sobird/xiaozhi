@@ -14,18 +14,48 @@ Run your XiaoZhi AI on the terminal
 [size]: https://packagephobia.com/badge?p=@sobird/xiaozhi
 [size-url]: https://packagephobia.com/result?p=@sobird/xiaozhi
 
-## 本地开发
+## Usage
+
+**Install [sox](https://sourceforge.net/projects/sox/)**
+
+Configure sox environment variables
+
 ```sh
-# 安装依赖
+# installed successfully
+sox --version
+sox:      SoX v
+```
+
+**Install [Node.js](https://nodejs.org/)**
+```sh
+# installed successfully
+node -v
+v22.1.0
+```
+
+**Install XiaoZhi AI**
+
+```sh
+npm i -g @sobird/xiaozhi
+
+# Run xzai on the terminal and start a chat
+xzai
+```
+**Note:** Press the spacebar to start chatting(No need to keep pressing), Press the spacebar again to complete the voice input.
+
+
+## Develop
+```sh
+# clone repo
+git clone https://github.com/sobird/xiaozhi.git
+# install deps
 pnpm install
-
-# 运行项目
+# start run
 pnpm start
-
-# 或者 将命令安装到全局
+# or npm link to xzai cli to global
 npm link
 
-# 在终端运行
+# Run on the terminal
 xzai
 ```
 
