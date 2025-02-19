@@ -19,20 +19,25 @@ import { asyncFunction } from './utils/asyncFunction';
 
 const program = new Command();
 
-program
+export type CommandOptions = ReturnType<typeof command.opts>;
+
+const command = program
   .name('xzai')
   .description(description)
   .version(version)
   // .arguments('[eventName]')
-  .option('-r, --rate <RATE>', 'Sample rate of audio', (value: string) => { return Number(value); }, 48000)
-  .option('-c, --channels <CHANNELS>', 'Number of channels of audio data; e.g. 2 = stereo', (value: string) => { return Number(value); }, 2)
-  .option('-b, --bits <BITS>', 'Encoded sample size in bits', (value: string) => { return Number(value); }, 16)
-  .option('--config <PATH>', 'Config file path')
+  .option('-r, --rate <Number>', 'Sample rate of audio', (value: string) => { return Number(value); })
+  .option('-c, --channels <Number>', 'Number of channels of audio data; e.g. 2 = stereo', (value: string) => { return Number(value); })
+  .option('-b, --bits <Number>', 'Encoded sample size in bits', (value: string) => { return Number(value); })
+  .option('-f, --frame-duration <Number>', 'Frame duration', (value: string) => { return Number(value); })
+  .option('-i, --init', 'Initial configuration')
+  // .option('--config <PATH>', 'Config file path')
   .action(async (options) => {
-    const config = Config.Load(options.config);
+    const config = await Config.Load(options);
+    await config.prompts();
 
     // config.save();
-    console.log('options', options);
+    console.log('config', config);
 
     return;
     const mqttService = new MqttService();
