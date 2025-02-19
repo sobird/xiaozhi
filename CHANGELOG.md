@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/sobird/xiaozhi/compare/v1.0.2...v1.1.0) (2025-02-19)
+
+
+### Features
+
+* spawn using spawn to call sox to manipulate audio streams ([c83aaff](https://github.com/sobird/xiaozhi/commit/c83aaff3bf385c2ed87471a518e4e190012f8ab0))
+* speaker: comment out annoying warning & publish to @sobird/speaker ([f31a6ab](https://github.com/sobird/xiaozhi/commit/f31a6ab8308f93624fcc38431a97e69b16787c72))
+
+
+### Bug Fixes
+
+* await mqtt connected ([d088cb3](https://github.com/sobird/xiaozhi/commit/d088cb3e0484ca610c6ac79f2a6b8e4f48163c65))
+
 ## [1.0.2](https://github.com/sobird/xiaozhi/compare/v1.0.1...v1.0.2) (2025-02-18)
 
 
