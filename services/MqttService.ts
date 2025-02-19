@@ -1,10 +1,10 @@
 /* eslint-disable class-methods-use-this */
 // https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh
 import mqtt, { MqttClient } from 'mqtt';
-import ora from 'ora';
 
 import Config from '@/config';
 import { printRightAlign } from '@/utils/printRightAlign';
+import { tipSpinner } from '@/utils/spinner';
 
 import audioService from './AudioService';
 import OtaService, { OtaInfo } from './OtaService';
@@ -43,12 +43,6 @@ const HELLO_MESSAGE = {
   },
 };
 
-const spinner = ora({
-  discardStdin: false,
-  text: '请按下空格键开始说话(ctrl+c 退出聊天)...',
-  color: 'magenta',
-});
-
 export default class MqttService {
   mqttClient!: MqttClient;
 
@@ -80,7 +74,7 @@ export default class MqttService {
     mqttClient.on('connect', () => {
       // console.log('Connected to MQTT server');
       mqttClient.subscribe(mqttOption.subscribe_topic);
-      spinner.start();
+      tipSpinner.start();
     });
     mqttClient.on('message', (topic, message) => {
       const msg: MqttMessage = JSON.parse(message.toString());
@@ -123,6 +117,7 @@ export default class MqttService {
   private llm(topic: string, message: MqttMessage) {
     if (this.ttsState === 'start') {
       this.llmMessage = message;
+      console.log(message.text, message.emotion);
     }
   }
 
@@ -137,17 +132,21 @@ export default class MqttService {
     }
 
     if (message.state === 'sentence_start') {
-      const { llmMessage } = this;
-      console.log(`${llmMessage?.text}`, `\x1b[95m${message.text}\x1b[0m\n`);
+      // const { llmMessage } = this;
+      process.stdout.write('\x1b[2K'); // 清除当前行
+      console.log('');
+      console.log(`\x1b[95m${message.text}\x1b[0m\n`);
+      // audioService.text = `${llmMessage?.text} \x1b[95m${message.text}\x1b[0m\n`;
     }
+
     if (message.state === 'stop' && !this.listening) {
-      spinner.start();
+      audioService.ttsStoped = true;
     }
   }
 
   // 对用户来说，就是开始说话
   startListening() {
-    spinner.stop();
+    tipSpinner.stop();
     this.listening = true;
 
     const { aesOpusInfo, ttsState } = this;

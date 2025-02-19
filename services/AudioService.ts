@@ -3,6 +3,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 import OpusScript from 'opusscript';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
+import { tipSpinner } from '@/utils/spinner';
 
 import DgramService from './DgramService';
 
@@ -35,6 +36,8 @@ export class AudioService {
   sequence = 0;
 
   isPaused = false;
+
+  ttsStoped = false;
 
   // 建立音频通道
   hello(options: AudioOptions) {
@@ -69,9 +72,16 @@ export class AudioService {
 
     const mic = sox.stdout;
 
-    // sox.stderr.on('data', (chunk) => {
-    //   console.log(chunk.toString());
-    // });
+    sox.stderr.on('data', () => {
+      // const lns = chunk.toString().split('\n');
+      // const last = lns[lns.length - 1];
+      // const parts = last.split()
+
+      // process.stdout.write('\r'); // 移动光标到行首
+      // process.stdout.write('\x1b[2K'); // 清除当前行
+      // process.stdout.write(last);
+      // console.log(lns);
+    });
 
     // mic.on('readable', () => {
     //   console.log('有数据可读');
@@ -108,10 +118,6 @@ export class AudioService {
       });
     });
 
-    sox.stderr.on('data', () => {
-      // console.error(data.toString());
-    });
-
     mic.on('error', (err) => {
       console.error(`send audio error: ${err}`);
     });
@@ -141,8 +147,27 @@ export class AudioService {
       '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 输出到默认音频设备
     ]);
 
-    sox.stderr.on('data', () => {
+    let timer: NodeJS.Timeout;
+    sox.stderr.on('data', (data) => {
+      const lns = data.toString().split('\n');
+      if (lns.length > 1) {
+        return;
+      }
+
+      process.stdout.write('\r'); // 移动光标到行首
+      process.stdout.write('\x1b[2K'); // 清除当前行
+      process.stdout.write(data.toString());
       // console.error(data.toString());
+
+      if (!this.ttsStoped) {
+        return;
+      }
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        // process.stdout.write('\r'); // 移动光标到行首
+        // process.stdout.write('\x1b[2K'); // 清除当前行
+        tipSpinner.start();
+      }, 200);
     });
 
     const opusScript = new OpusScript(outputSampleRate, outputChannels, OpusScript.Application.AUDIO);
