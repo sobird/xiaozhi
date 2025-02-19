@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.1](https://github.com/sobird/xiaozhi/compare/v1.2.0...v1.2.1) (2025-02-19)
+
+
+### Bug Fixes
+
+* change opusscript MAX_FRAME_SIZE to 960 * 6 ([443cbcb](https://github.com/sobird/xiaozhi/commit/443cbcbda97ebea58d3030b4a019983fe79fecdf))
+
+
+### Performance Improvements
+
+* audio spinner interactive optimal ([0876397](https://github.com/sobird/xiaozhi/commit/0876397d9a91cd85565b9b8ea3a42a0798548696))
+
 ## [1.2.0](https://github.com/sobird/xiaozhi/compare/v1.1.0...v1.2.0) (2025-02-19)
 
 
