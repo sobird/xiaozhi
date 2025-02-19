@@ -14,8 +14,7 @@ import { randomWave } from '@/utils/randomWave';
 import MqttService from './services/MqttService';
 
 const mqttService = new MqttService();
-// 无需await
-mqttService.start();
+await mqttService.start();
 
 const spinner = ora({
   discardStdin: false,
