@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/sobird/xiaozhi/compare/v1.2.1...v1.2.2) (2025-02-19)
+
+
+### Bug Fixes
+
+* use @sobird/opusscript ([014d571](https://github.com/sobird/xiaozhi/commit/014d57189d3890111535f870aae569be60ab77b1))
+
 ## [1.2.1](https://github.com/sobird/xiaozhi/compare/v1.2.0...v1.2.1) (2025-02-19)
 
 
