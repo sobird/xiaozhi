@@ -102,7 +102,7 @@ export class AudioService {
       const encryptedData = aesCtrEncrypt(key, newNonce, encodedBuffer);
       const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
 
-      console.log('packet', packet);
+      // console.log('packet', packet);
       DgramService.send(packet, port, server, (err) => {
         if (err) console.error('Error sending audio:', err);
       });

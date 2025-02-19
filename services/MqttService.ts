@@ -84,7 +84,7 @@ export default class MqttService {
     });
     mqttClient.on('message', (topic, message) => {
       const msg: MqttMessage = JSON.parse(message.toString());
-      console.log('message:', msg);
+      // console.log('message:', msg);
 
       const method = this[`${msg.type}`];
       if (typeof method === 'function') {

@@ -5,7 +5,7 @@
  *
  * sobird<i@sobird.me> at 2025/02/17 8:35:26 created.
  */
-import readline from 'readline';
+// import readline from 'readline';
 
 import { Command } from '@commander-js/extra-typings';
 import ora from 'ora';
@@ -15,6 +15,7 @@ import { randomWave } from '@/utils/randomWave';
 import Config from './config';
 import { version, description } from './package.json' with { type: 'json' };
 import MqttService from './services/MqttService';
+import { keypress } from './utils';
 
 const program = new Command();
 
@@ -57,14 +58,8 @@ const command = program
       },
     });
 
-    readline.emitKeypressEvents(process.stdin);
-    if (process.stdin.isTTY) {
-      process.stdin.setRawMode(true);
-    }
-
     let space = false;
-    // 监听按键事件
-    process.stdin.on('keypress', (str, key) => {
+    keypress((str, key) => {
       if (key.name === 'space') {
         space = !space;
 
@@ -84,8 +79,6 @@ const command = program
         process.exit();
       }
     });
-
-    // await asyncFunction(5000);
   });
 
 try {
@@ -93,10 +86,8 @@ try {
   program.parse(process.argv);
 } catch (err) {
   console.log('err', err);
-  // custom processing...
 }
 
-//
 process.on('SIGINT', () => {
   process.exit();
 });
