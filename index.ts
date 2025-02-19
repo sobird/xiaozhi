@@ -46,7 +46,6 @@ const command = program
 
     const spinner = ora({
       discardStdin: false,
-      // text: 'Loading...',
       spinner: {
         frames: [
           randomWave(),
@@ -62,12 +61,9 @@ const command = program
     keypress((str, key) => {
       if (key.name === 'space') {
         space = !space;
-
         if (space) {
           mqttService.startListening();
           spinner.start();
-
-          // keypress
         } else {
           spinner.stop();
           mqttService.stopListening();

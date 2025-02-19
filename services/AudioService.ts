@@ -108,6 +108,10 @@ export class AudioService {
       });
     });
 
+    sox.stderr.on('data', () => {
+      // console.error(data.toString());
+    });
+
     mic.on('error', (err) => {
       console.error(`send audio error: ${err}`);
     });
@@ -137,9 +141,9 @@ export class AudioService {
       '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 输出到默认音频设备
     ]);
 
-    // sox.stderr.on('data', (data) => {
-    //   console.error(data.toString());
-    // });
+    sox.stderr.on('data', () => {
+      // console.error(data.toString());
+    });
 
     const opusScript = new OpusScript(outputSampleRate, outputChannels, OpusScript.Application.AUDIO);
 
