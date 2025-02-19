@@ -11,7 +11,7 @@ import { MqttMessage } from './MqttService';
 const AUDIO_PARAMS: MqttMessage['audio_params'] = {
   sample_rate: 48000,
   channels: 2,
-  frame_duration: 20,
+  frame_duration: 40,
 };
 
 // 单例

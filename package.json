@@ -29,9 +29,12 @@
   "author": "sobird",
   "license": "MIT",
   "dependencies": {
+    "@commander-js/extra-typings": "^13.1.0",
+    "commander": "^13.1.0",
     "mqtt": "^5.10.3",
     "opusscript": "^0.1.1",
     "ora": "^8.2.0",
+    "rc": "^1.2.8",
     "string-width": "^7.2.0"
   },
   "devDependencies": {
@@ -43,6 +46,7 @@
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^20.17.19",
+    "@types/rc": "^1.2.4",
     "@types/ws": "^8.5.14",
     "aedes": "^0.51.3",
     "eslint-config-sobird": "^0.2.16",
