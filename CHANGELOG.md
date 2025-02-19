@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/sobird/xiaozhi/compare/v1.1.0...v1.2.0) (2025-02-19)
+
+
+### Features
+
+* cli parameter configuration ([9b1fe32](https://github.com/sobird/xiaozhi/commit/9b1fe329e1e21546c3615586b6d0edb305ecaed3))
+* config support prompts ([cc67d4e](https://github.com/sobird/xiaozhi/commit/cc67d4e9b5986e3c9a09f0049608087eb15a1c31))
+
+
+### Bug Fixes
+
+* keypress event conflict with prompts or ora ([320fdd5](https://github.com/sobird/xiaozhi/commit/320fdd55aa1100efc37ae668b8fa768f588b17d1))
+* spwan sox on data event only run 108 seconds ([adabd05](https://github.com/sobird/xiaozhi/commit/adabd05635229685b05b0a9b26a5581aa71933ae))
+
 ## [1.1.0](https://github.com/sobird/xiaozhi/compare/v1.0.2...v1.1.0) (2025-02-19)
 
 
