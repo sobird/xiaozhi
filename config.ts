@@ -12,40 +12,53 @@ const APP_NAME = 'xzai';
 const APP_HOME = path.resolve(os.homedir(), `.${APP_NAME}`);
 
 class Config {
+  public inputSampleRate: SampleRate;
+
+  public inputChannels: number;
+
+  public inputBits: number;
+
+  public inputFrameDuration: number;
+
+  public outputSampleRate: SampleRate;
+
+  public outputChannels: number;
+
+  public outputBits: number;
+
+  // public outputFrameDuration: number;
+
   #path: string = path.join(APP_HOME, 'config');
-
-  public rate: number;
-
-  public channels: number;
-
-  public bits: number;
-
-  public frameDuration: number;
 
   #modified = false;
 
   #init? = false;
 
   constructor(config: Config, options: CommandOptions) {
-    this.rate = options.rate || config.rate;
-    this.channels = options.channels || config.channels;
-    this.bits = options.bits || config.bits;
-    this.frameDuration = options.frameDuration || config.frameDuration;
+    this.inputSampleRate = options.inputSampleRate || config.inputSampleRate;
+    this.inputChannels = options.inputChannels || config.inputChannels;
+    this.inputBits = options.inputBits || config.inputBits;
+    this.inputFrameDuration = options.inputFrameDuration || config.inputFrameDuration;
+
+    this.outputSampleRate = options.outputSampleRate || config.outputSampleRate;
+    this.outputChannels = options.outputChannels || config.outputChannels;
+    this.outputBits = options.outputBits || config.outputBits;
+    // this.outputFrameDuration = options.outputFrameDuration || config.outputFrameDuration;
 
     this.#init = options.init;
   }
 
   async prompts() {
-    await this.promptRate();
-    await this.promptChannels();
-    await this.promptBits();
-    await this.promptframeDuration();
+    await this.promptInputSampleRate();
+    await this.promptInputChannels();
+    await this.promptInputBits();
+    await this.promptInputFrameDuration();
 
     this.modify();
   }
 
-  async promptRate() {
-    if (this.rate && !this.#init) {
+  async promptInputSampleRate() {
+    if (this.inputSampleRate && !this.#init) {
       return;
     }
     let initial = 0;
@@ -55,75 +68,92 @@ class Config {
       { title: '32000', value: 32000 },
       { title: '24000', value: 24000 },
       { title: '16000', value: 16000 },
-      { title: 'other', value: 'other', description: 'custom input sample rate' },
+      { title: 'other', value: 'other', description: 'custom input sample inputSampleRate' },
     ];
-    if (this.rate) {
+    if (this.inputSampleRate) {
       initial = choices.findIndex((item) => {
-        return item.value === this.rate;
+        return item.value === this.inputSampleRate;
       });
     }
-    const { rate } = await prompts({
+    const { inputSampleRate } = await prompts({
       type: 'select',
-      name: 'rate',
-      message: 'Pick a Sample Rate',
+      name: 'inputSampleRate',
+      message: 'Pick a Sample SampleRate',
       choices,
       initial,
     });
 
-    if (rate === 'other') {
+    if (inputSampleRate === 'other') {
       const { other } = await prompts({
         type: 'number',
         name: 'other',
-        message: 'Please enter Sample Rate',
+        message: 'Please enter Sample SampleRate',
       });
-      this.rate = other;
+      this.inputSampleRate = other;
       return;
     }
-    this.rate = rate;
+
+    if (this.#init && !inputSampleRate) {
+      return;
+    }
+    this.inputSampleRate = inputSampleRate;
     this.#modified = true;
   }
 
-  async promptChannels() {
-    if (this.channels && !this.#init) {
+  async promptInputChannels() {
+    if (this.inputChannels && !this.#init) {
       return;
     }
-    const { channels } = await prompts({
+    const { inputChannels } = await prompts({
       type: 'number',
-      name: 'channels',
+      name: 'inputChannels',
       message: 'Please enter Channels',
-      initial: this.channels || 2,
+      initial: this.inputChannels || 2,
     });
-    this.channels = channels;
+
+    // 当初始化时，值不存在则不更新
+    if (this.#init && !inputChannels) {
+      return;
+    }
+    this.inputChannels = inputChannels;
     this.#modified = true;
   }
 
-  async promptBits() {
-    if (this.bits && !this.#init) {
+  async promptInputBits() {
+    if (this.inputBits && !this.#init) {
       return;
     }
 
-    const { bits } = await prompts({
+    const { inputBits } = await prompts({
       type: 'number',
-      name: 'bits',
+      name: 'inputBits',
       message: 'Please enter Bits',
-      initial: this.bits || 16,
+      initial: this.inputBits || 16,
     });
-    this.bits = bits;
+
+    if (this.#init && !inputBits) {
+      return;
+    }
+    this.inputBits = inputBits;
     this.#modified = true;
   }
 
-  async promptframeDuration() {
-    if (this.frameDuration && !this.#init) {
+  async promptInputFrameDuration() {
+    if (this.inputFrameDuration && !this.#init) {
       return;
     }
 
-    const { frameDuration } = await prompts({
+    const { inputFrameDuration } = await prompts({
       type: 'number',
-      name: 'frameDuration',
+      name: 'inputFrameDuration',
       message: 'Please enter Frame Duration',
-      initial: this.frameDuration || 60,
+      initial: this.inputFrameDuration || 60,
     });
-    this.frameDuration = frameDuration;
+
+    if (this.#init && !inputFrameDuration) {
+      return;
+    }
+    this.inputFrameDuration = inputFrameDuration;
     this.#modified = true;
   }
 
@@ -133,6 +163,10 @@ class Config {
     }
     fs.mkdirSync(path.dirname(this.#path), { recursive: true });
     fs.writeFileSync(this.#path, JSON.stringify(this, null, 2), 'utf8');
+  }
+
+  get modified() {
+    return this.#modified;
   }
 
   static async Load(options: CommandOptions) {

@@ -1,16 +1,17 @@
+/* eslint-disable class-methods-use-this */
 // https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh
 import mqtt, { MqttClient } from 'mqtt';
 import ora from 'ora';
 
+import Config from '@/config';
 import { printRightAlign } from '@/utils/printRightAlign';
 
 import audioService from './AudioService';
-import DgramService from './DgramService';
 import OtaService, { OtaInfo } from './OtaService';
 
 export interface MqttMessage {
-  type: string;
-  state: string;
+  type: 'hello' | 'llm' | 'stt' | 'tts' | 'goodbye';
+  state: 'start' | 'sentence_start' | 'sentence_stop' | 'stop';
   text: string;
   emotion: string;
   transport: 'udp';
@@ -42,10 +43,6 @@ const HELLO_MESSAGE = {
   },
 };
 
-DgramService.on('connect', () => {
-  console.log('connected dgram service');
-});
-
 const spinner = ora({
   discardStdin: false,
   text: '请按下空格键开始说话(ctrl+c 退出聊天)...',
@@ -68,6 +65,8 @@ export default class MqttService {
 
   // ttsConnected: boolean = false;
 
+  constructor(public config: Config) {}
+
   async start() {
     const otaInfo = await OtaService.otaInfo();
     const mqttOption = otaInfo.mqtt;
@@ -81,28 +80,16 @@ export default class MqttService {
     mqttClient.on('connect', () => {
       // console.log('Connected to MQTT server');
       mqttClient.subscribe(mqttOption.subscribe_topic);
+      spinner.start();
     });
     mqttClient.on('message', (topic, message) => {
       const msg: MqttMessage = JSON.parse(message.toString());
-      // console.log('message:', msg);
+      console.log('message:', msg);
 
-      const method = this[msg.type as keyof MqttService] as (topic: string, message: MqttMessage) => void;
+      const method = this[`${msg.type}`];
       if (typeof method === 'function') {
         method.call(this, topic, msg);
       }
-
-      // switch (msg.type) {
-      //   case 'hello':
-      //     this.hello(topic, msg);
-      //     break;
-      //   case 'tts':
-      //     this.tts(topic, msg);
-      //     break;
-      //   case 'goodbye':
-      //     this.goodbye(topic, msg);
-      //     break;
-      //   default:
-      // }
     });
     mqttClient.on('error', (error) => {
       console.log('mqtt error', error);
@@ -117,7 +104,10 @@ export default class MqttService {
   private hello(topic: string, message: MqttMessage) {
     this.aesOpusInfo = message;
 
-    audioService.start(message);
+    audioService.hello({
+      udp: message.udp,
+      ...this.config,
+    });
   }
 
   // 结束对话
@@ -182,13 +172,14 @@ export default class MqttService {
       });
     }
 
-    audioService.resumeSendAudio();
+    audioService.resumeMicrophone();
   }
 
   // 对用户来说，就是停止说话
   stopListening() {
     this.listening = false;
     const { aesOpusInfo } = this;
+
     if (aesOpusInfo?.session_id) {
       this.publish({
         session_id: aesOpusInfo.session_id,
@@ -196,7 +187,7 @@ export default class MqttService {
         state: 'stop',
       });
 
-      audioService.pauseSendAudio();
+      audioService.pauseMicrophone();
     }
   }
 

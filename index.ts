@@ -15,7 +15,6 @@ import { randomWave } from '@/utils/randomWave';
 import Config from './config';
 import { version, description } from './package.json' with { type: 'json' };
 import MqttService from './services/MqttService';
-import { asyncFunction } from './utils/asyncFunction';
 
 const program = new Command();
 
@@ -25,22 +24,23 @@ const command = program
   .name('xzai')
   .description(description)
   .version(version)
-  // .arguments('[eventName]')
-  .option('-r, --rate <Number>', 'Sample rate of audio', (value: string) => { return Number(value); })
-  .option('-c, --channels <Number>', 'Number of channels of audio data; e.g. 2 = stereo', (value: string) => { return Number(value); })
-  .option('-b, --bits <Number>', 'Encoded sample size in bits', (value: string) => { return Number(value); })
-  .option('-f, --frame-duration <Number>', 'Frame duration', (value: string) => { return Number(value); })
+  .option('-r, --input-sample-rate <Number>', 'Input sample rate of audio', (value: string) => { return Number(value) as SampleRate; })
+  .option('-c, --input-channels <Number>', 'Input number of channels of audio data; e.g. 2 = stereo', (value: string) => { return Number(value); })
+  .option('-b, --input-bits <Number>', 'Input encoded sample size in bits', (value: string) => { return Number(value); })
+  .option('-f, --input-frame-duration <Number>', 'Input frame duration', (value: string) => { return Number(value); })
+
+  .option('-R, --output-sample-rate <Number>', 'Ouput sample rate of audio', (value: string) => { return Number(value) as SampleRate; }, 48000)
+  .option('-C, --output-channels <Number>', 'Ouput number of channels of audio data; e.g. 2 = stereo', (value: string) => { return Number(value); }, 1)
+  .option('-B, --output-bits <Number>', 'Ouput encoded sample size in bits', (value: string) => { return Number(value); }, 16)
+  // .option('-F, --output-frame-duration <Number>', 'Ouput frame duration', (value: string) => { return Number(value); }, 60)
+
   .option('-i, --init', 'Initial configuration')
   // .option('--config <PATH>', 'Config file path')
   .action(async (options) => {
     const config = await Config.Load(options);
     await config.prompts();
 
-    // config.save();
-    console.log('config', config);
-
-    return;
-    const mqttService = new MqttService();
+    const mqttService = new MqttService(config);
     await mqttService.start();
 
     const spinner = ora({
@@ -57,10 +57,6 @@ const command = program
       },
     });
 
-    readline.emitKeypressEvents(process.stdin);
-    if (process.stdin.isTTY) {
-      process.stdin.setRawMode(true);
-    }
     readline.emitKeypressEvents(process.stdin);
     if (process.stdin.isTTY) {
       process.stdin.setRawMode(true);
@@ -84,13 +80,6 @@ const command = program
       }
 
       // 按下 Ctrl+C 退出
-      if (key.ctrl && key.name === 'c') {
-        process.exit();
-      }
-    });
-    // 监听按键事件
-    process.stdin.on('keypress', (str, key) => {
-      console.log('key', key);
       if (key.ctrl && key.name === 'c') {
         process.exit();
       }

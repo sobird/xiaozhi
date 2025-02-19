@@ -3,20 +3,30 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 import OpusScript from 'opusscript';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
-import voiceWave from '@/utils/voiceWave';
 
 import DgramService from './DgramService';
-import { MqttMessage } from './MqttService';
 
-const AUDIO_PARAMS: MqttMessage['audio_params'] = {
-  sample_rate: 48000,
-  channels: 2,
-  frame_duration: 40,
-};
+interface AudioOptions {
+  udp: {
+    server: string;
+    port: number;
+    encryption: string;
+    key: string;
+    nonce: string;
+  }
+  // 音频输入
+  inputSampleRate: SampleRate;
+  inputChannels: number;
+  inputFrameDuration: number;
+  // 音频输出
+  outputSampleRate: SampleRate;
+  outputChannels: number;
+  outputframeDuration?: number;
+}
 
 // 单例
 export class AudioService {
-  options!: MqttMessage;
+  options?: AudioOptions;
 
   mic?: ChildProcessWithoutNullStreams;
 
@@ -24,7 +34,10 @@ export class AudioService {
 
   sequence = 0;
 
-  start(options: MqttMessage) {
+  isPaused = false;
+
+  // 建立音频通道
+  hello(options: AudioOptions) {
     this.options = options;
     this.createMicrophone();
     this.createSpeaker();
@@ -32,53 +45,33 @@ export class AudioService {
     this.sequence = 0;
   }
 
-  // 用户暂停说话
-  pauseSendAudio() {
-    this.mic?.kill('SIGSTOP');
-    this.mic?.stdout.pause();
-    // voiceWave.stop();
-  }
-
-  resumeSendAudio() {
-    this.mic?.kill('SIGCONT');
-    // voiceWave.start();
-    this.mic?.stdout.resume();
-  }
-
   // 启动麦克风
   createMicrophone() {
     if (this.mic) {
       return;
     }
-
-    const { sample_rate: sampleRate, channels, frame_duration: frameDuration } = AUDIO_PARAMS;
-    const frameSize = (sampleRate * frameDuration) / 1000;
-    // 写死
-    const opusScript = new OpusScript(sampleRate, channels, OpusScript.Application.AUDIO);
-
-    // const mic = Record.record({
-    //   sampleRate,
-    //   channels,
-    // });
+    if (!this.options) {
+      return;
+    }
+    const { inputSampleRate, inputChannels, inputFrameDuration } = this.options;
+    const frameSize = (inputSampleRate * inputFrameDuration) / 1000;
+    const opusScript = new OpusScript(inputSampleRate, inputChannels, OpusScript.Application.AUDIO);
 
     const sox = spawn('sox', [
       '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 捕获默认麦克风音频
-      '-t', 'raw', // 指定输入格式为原始音频数据
-      '-r', `${sampleRate}`, // 采样率
+      '-t', 'raw',
+      '-r', `${inputSampleRate}`, // 采样率
       '-b', '16', // 位深
-      '-c', `${channels}`, // 声道数
+      '-c', `${inputChannels}`, // 声道数
       '-e', 'signed-integer',
       '-', // 从标准输入读取数据
-    ], { stdio: 'pipe' });
+    ]);
 
     const mic = sox.stdout;
 
     // sox.stderr.on('data', (chunk) => {
     //   console.log(chunk.toString());
     // });
-
-    // voiceWave.start();
-    // spinner.start();
 
     // mic.on('readable', () => {
     //   console.log('有数据可读');
@@ -89,21 +82,27 @@ export class AudioService {
     // });
 
     mic.on('data', (data: Buffer) => {
+      if (this.isPaused) {
+        return;
+      }
+      if (!this.options) {
+        return;
+      }
       const {
         key, nonce, port, server,
       } = this.options.udp;
 
-      const encodedPacket = opusScript.encode(data, frameSize);
-      const encodedDataLengthHex = encodedPacket.length.toString(16).padStart(4, '0');
+      const encodedBuffer = opusScript.encode(data, frameSize);
+      const encodedBufferLengthHex = encodedBuffer.length.toString(16).padStart(4, '0');
       this.sequence += 1;
       const sequenceHex = this.sequence.toString(16).padStart(8, '0');
 
       const newNonce = nonce.slice(0, 4)
-      + encodedDataLengthHex + nonce.slice(8, 24) + sequenceHex;
-      const encryptedData = aesCtrEncrypt(key, newNonce, encodedPacket);
+      + encodedBufferLengthHex + nonce.slice(8, 24) + sequenceHex;
+      const encryptedData = aesCtrEncrypt(key, newNonce, encodedBuffer);
       const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
 
-      // console.log('packet', packet);
+      console.log('packet', packet);
       DgramService.send(packet, port, server, (err) => {
         if (err) console.error('Error sending audio:', err);
       });
@@ -122,41 +121,57 @@ export class AudioService {
       return;
     }
 
-    // const { sample_rate: sampleRate, frame_duration: frameDuration } = AUDIO_PARAMS;
-    // const frameNum = Math.floor(frameDuration / (1000 / sampleRate));
+    if (!this.options) {
+      return;
+    }
 
-    const sampleRate = 48000;
-    const channels = 1;
+    const { outputSampleRate, outputChannels } = this.options;
 
     const sox = spawn('sox', [
       '-t', 'raw', // 指定输入格式为原始音频数据
-      '-r', `${sampleRate}`, // 采样率
+      '-r', `${outputSampleRate}`, // 采样率
       '-b', '16', // 位深
-      '-c', `${channels}`, // 声道数
+      '-c', `${outputChannels}`, // 声道数
       '-e', 'signed-integer',
       '-', // 从标准输入读取数据
       '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 输出到默认音频设备
     ]);
+
     // sox.stderr.on('data', (data) => {
     //   console.error(data.toString());
     // });
 
-    // 写死
-    const opusScript = new OpusScript(sampleRate, channels, OpusScript.Application.AUDIO);
+    const opusScript = new OpusScript(outputSampleRate, outputChannels, OpusScript.Application.AUDIO);
 
     DgramService.on('message', (data) => {
+      if (!this.options) {
+        return;
+      }
       const { key } = this.options.udp;
-      // console.log('speaker data', data);
 
-      const splitNonce = data.subarray(0, 16);
-      const encryptedData = data.subarray(16);
-      const decryptedData = aesCtrDecrypt(key, splitNonce.toString('hex'), encryptedData);
-      const decodedData = opusScript.decode(decryptedData);
+      const nonce = data.subarray(0, 16);
+      const encryptedBuffer = data.subarray(16);
+      const decryptedBuffer = aesCtrDecrypt(key, nonce.toString('hex'), encryptedBuffer);
+      const decodeBuffer = opusScript.decode(decryptedBuffer);
 
-      sox.stdin.write(decodedData);
+      sox.stdin.write(decodeBuffer);
     });
 
     this.speaker = sox;
+  }
+
+  pauseMicrophone() {
+    if (!this.mic) {
+      return;
+    }
+    this.isPaused = true;
+  }
+
+  resumeMicrophone() {
+    if (!this.mic) {
+      return;
+    }
+    this.isPaused = false;
   }
 }
 
