@@ -1,6 +1,6 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 
-import OpusScript from 'opusscript';
+import OpusScript from '@sobird/opusscript';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
 import { tipSpinner } from '@/utils/spinner';

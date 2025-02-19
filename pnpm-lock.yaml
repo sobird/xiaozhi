@@ -11,15 +11,15 @@ importers:
       '@commander-js/extra-typings':
         specifier: ^13.1.0
         version: 13.1.0(commander@13.1.0)
+      '@sobird/opusscript':
+        specifier: ^0.1.1
+        version: 0.1.1
       commander:
         specifier: ^13.1.0
         version: 13.1.0
       mqtt:
         specifier: ^5.10.3
         version: 5.10.3
-      opusscript:
-        specifier: ^0.1.1
-        version: 0.1.1
       ora:
         specifier: ^8.2.0
         version: 8.2.0
@@ -1222,6 +1222,9 @@ packages:
 
   '@rushstack/eslint-patch@1.10.5':
     resolution: {integrity: sha512-kkKUDVlII2DQiKy7UstOR1ErJP8kUKAQ4oa+SQtM0K+lPdmmjj0YnnxBgtTVYH7mUKtbsxeFC9y0AmK7Yb78/A==}
+
+  '@sobird/opusscript@0.1.1':
+    resolution: {integrity: sha512-1oRxHiSYmb7Rk1ThzBwkVYk0T2aBCx1UyNmVJYWDo5kC7hnkc0eCS+UxWoOqA8yd1FWcZ1rxSogeryd8ERe33w==}
 
   '@types/conventional-commits-parser@5.0.1':
     resolution: {integrity: sha512-7uz5EHdzz2TqoMfV7ee61Egf5y6NkcO4FB/1iCCQnbeiI1F3xzv3vK5dBCXUCLQgGYS+mUeigK1iKQzvED+QnQ==}
@@ -2713,9 +2716,6 @@ packages:
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
-
-  opusscript@0.1.1:
-    resolution: {integrity: sha512-mL0fZZOUnXdZ78woRXp18lApwpp0lF5tozJOD1Wut0dgrA9WuQTgSels/CSmFleaAZrJi/nci5KOVtbuxeWoQA==}
 
   ora@8.2.0:
     resolution: {integrity: sha512-weP+BZ8MVNnlCm8c0Qdc1WSWq4Qn7I+9CJGm7Qali6g44e/PUzbjNqJX5NJ9ljlNMosfJvg1fKEGILklK9cwnw==}
@@ -4598,6 +4598,8 @@ snapshots:
 
   '@rushstack/eslint-patch@1.10.5': {}
 
+  '@sobird/opusscript@0.1.1': {}
+
   '@types/conventional-commits-parser@5.0.1':
     dependencies:
       '@types/node': 20.17.19
@@ -6433,8 +6435,6 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
       word-wrap: 1.2.5
-
-  opusscript@0.1.1: {}
 
   ora@8.2.0:
     dependencies:
