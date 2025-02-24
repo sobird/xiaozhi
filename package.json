@@ -41,7 +41,8 @@
     "ora": "^8.2.0",
     "prompts": "^2.4.2",
     "rc": "^1.2.8",
-    "string-width": "^7.2.0"
+    "string-width": "^7.2.0",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.7.1",
@@ -56,6 +57,7 @@
     "@types/rc": "^1.2.4",
     "@types/react": "19.0.10",
     "@types/ws": "^8.5.14",
+    "@types/xml2js": "^0.4.14",
     "aedes": "^0.51.3",
     "eslint-config-sobird": "^0.2.16",
     "glob": "^10.4.5",

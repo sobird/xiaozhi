@@ -59,6 +59,12 @@ npm link
 xzai
 ```
 
+## Wechat
+
+```sh
+npx localtunnel --port 3000
+```
+
 ## FAQ
 
 * 使用`ora`后，设置的`process.stdin.on('keypress', (str, key) => {});`键盘监听事件无效
