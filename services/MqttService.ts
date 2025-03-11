@@ -31,15 +31,16 @@ export interface MqttMessage {
   session_id: string;
 }
 
+// 发送 hello 消息申请 UDP 通道
 const HELLO_MESSAGE = {
   type: 'hello',
   version: 3,
   transport: 'udp',
   audio_params: {
     format: 'opus',
-    sample_rate: 48000,
-    channels: 2,
-    frame_duration: 20,
+    sample_rate: 16000,
+    channels: 1,
+    frame_duration: 60,
   },
 };
 
