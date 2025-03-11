@@ -3,7 +3,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 import OpusScript from '@sobird/opusscript';
 
 import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
-import { tipSpinner } from '@/utils/spinner';
+// import { tipSpinner } from '@/utils/spinner';
 
 import DgramService from './DgramService';
 
@@ -147,27 +147,27 @@ export class AudioService {
       '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 输出到默认音频设备
     ]);
 
-    let timer: NodeJS.Timeout;
-    sox.stderr.on('data', (data) => {
-      const lns = data.toString().split('\n');
-      if (lns.length > 1) {
-        return;
-      }
+    // let timer: NodeJS.Timeout;
+    sox.stderr.on('data', () => {
+      // const lns = data.toString().split('\n');
+      // if (lns.length > 1) {
+      //   return;
+      // }
 
-      process.stdout.write('\r'); // 移动光标到行首
-      process.stdout.write('\x1b[2K'); // 清除当前行
-      process.stdout.write(data.toString());
-      // console.error(data.toString());
+      // process.stdout.write('\r'); // 移动光标到行首
+      // process.stdout.write('\x1b[2K'); // 清除当前行
+      // process.stdout.write(data.toString());
+      // // console.error(data.toString());
 
-      if (!this.ttsStoped) {
-        return;
-      }
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        // process.stdout.write('\r'); // 移动光标到行首
-        // process.stdout.write('\x1b[2K'); // 清除当前行
-        tipSpinner.start();
-      }, 200);
+      // if (!this.ttsStoped) {
+      //   return;
+      // }
+      // clearTimeout(timer);
+      // timer = setTimeout(() => {
+      //   // process.stdout.write('\r'); // 移动光标到行首
+      //   // process.stdout.write('\x1b[2K'); // 清除当前行
+      //   tipSpinner.start();
+      // }, 200);
     });
 
     const opusScript = new OpusScript(outputSampleRate, outputChannels, OpusScript.Application.AUDIO);

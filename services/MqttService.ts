@@ -134,14 +134,15 @@ export default class MqttService {
 
     if (message.state === 'sentence_start') {
       // const { llmMessage } = this;
-      process.stdout.write('\x1b[2K'); // 清除当前行
-      console.log('');
-      console.log(`\x1b[95m${message.text}\x1b[0m\n`);
+      // process.stdout.write('\x1b[2K'); // 清除当前行
+      // console.log('');
+      console.log(`\x1b[95m${message.text}\x1b[0m`);
       // audioService.text = `${llmMessage?.text} \x1b[95m${message.text}\x1b[0m\n`;
     }
 
     if (message.state === 'stop' && !this.listening) {
       audioService.ttsStoped = true;
+      tipSpinner.start();
     }
   }
 
