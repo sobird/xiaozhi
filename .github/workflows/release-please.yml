@@ -11,8 +11,10 @@ permissions:
 name: release-please
 
 jobs:
-  release-please:
+  release:
     runs-on: ubuntu-latest
+    outputs:
+      release-published: ${{ steps.release.outputs.release_created }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -24,26 +26,27 @@ jobs:
           # this is a built-in strategy in release-please, see "Action Inputs"
           # for more options
           release-type: node
+
+  publish:
+    if: needs.release.outputs.release-published
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
       - name: Checkout
-        if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v4
 
       - name: Install pnpm
-        if: ${{ steps.release.outputs.release_created }}
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
       - name: Install Node.js
-        if: ${{ steps.release.outputs.release_created }}
         uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
           registry-url: https://registry.npmjs.org/
-          cache: pnpm
 
       - name: Restore Cache
-        if: ${{ steps.release.outputs.release_created }}
         id: dependencies-cache
         uses: actions/cache@v4
         with:
@@ -54,14 +57,16 @@ jobs:
               ${{ runner.os }}-pnpm-
 
       - name: Install Dependencies 🔧
-        if: ${{ steps.dependencies-cache.outputs.cache-hit != 'true' && steps.release.outputs.release_created }}
+        if: steps.dependencies-cache.outputs.cache-hit != 'true'
         run: |
           pnpm install
 
       - name: Build ☕️
-        if: ${{ steps.release.outputs.release_created }}
         run: |
-          pnpm run build
-          npm publish --access public --registry=https://registry.npmjs.org/
+          pnpm build:xiaozhi
+
+      - name: Publish
+        run: |
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
