@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.3](https://github.com/sobird/xiaozhi/compare/v1.2.2...v1.2.3) (2025-03-11)
+
+
+### Bug Fixes
+
+* send hello message params update ([078578e](https://github.com/sobird/xiaozhi/commit/078578e4ef5ed759e819d573d5c4f1fabd9e8198))
+
+
+### Performance Improvements
+
+* show sox install guide ([e358580](https://github.com/sobird/xiaozhi/commit/e3585801993baccd3885502d4a93aeb2997c21ab))
+* tip spinner optimize ([3f7ef92](https://github.com/sobird/xiaozhi/commit/3f7ef9234ed09eee38b41c8f98f31594ec982bba))
+
 ## [1.2.2](https://github.com/sobird/xiaozhi/compare/v1.2.1...v1.2.2) (2025-02-19)
 
 
