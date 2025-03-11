@@ -15,7 +15,7 @@ import { randomWave } from '@/utils/randomWave';
 import Config from './config';
 import { version, description } from './package.json' with { type: 'json' };
 import MqttService from './services/MqttService';
-import { keypress } from './utils';
+import { cmdExists, keypress } from './utils';
 
 const program = new Command();
 
@@ -38,6 +38,9 @@ const command = program
   .option('-i, --init', 'Initial configuration')
   // .option('--config <PATH>', 'Config file path')
   .action(async (options) => {
+    // sox if exists
+    cmdExists('sox');
+
     const config = await Config.Load(options);
     await config.prompts();
 

@@ -6,7 +6,7 @@ import os from 'os';
 import prompts, { Choice } from 'prompts';
 import rc from 'rc';
 
-import { CommandOptions } from '.';
+import { type CommandOptions } from '.';
 
 const APP_NAME = 'xzai';
 const APP_HOME = path.resolve(os.homedir(), `.${APP_NAME}`);
