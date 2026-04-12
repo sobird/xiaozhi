@@ -8,8 +8,16 @@
     "typescript",
     "xiaozhi"
   ],
+  "homepage": "https://github.com/sobird/xiaozhi",
+  "bugs": {
+    "url": "https://github.com/sobird/xiaozhi/issues"
+  },
   "license": "MIT",
   "author": "sobird",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sobird/xiaozhi.git"
+  },
   "bin": {
     "xzai": "index.ts"
   },
@@ -29,7 +37,7 @@
     "lint:fix": "oxlint --fix",
     "postinstall": "echo \"postinstall\"",
     "prepare": "husky",
-    "prepublishOnly": "tsx scripts/prepublish.ts",
+    "prepublishOnly": "bun run build && bun scripts/prepublish.ts",
     "test": "bun test"
   },
   "dependencies": {
