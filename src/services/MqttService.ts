@@ -64,6 +64,7 @@ export default class MqttService {
 
   async start() {
     const otaInfo = await OtaService.otaInfo();
+    console.log('otaInfo', otaInfo)
     const mqttOption = otaInfo.mqtt;
     // console.log('otaInfo', otaInfo);
 
