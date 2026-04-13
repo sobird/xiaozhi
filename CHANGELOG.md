@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.5](https://github.com/sobird/xiaozhi/compare/v1.2.4...v1.2.5) (2026-04-13)
+
+
+### Bug Fixes
+
+* correct production build configuration ([231390c](https://github.com/sobird/xiaozhi/commit/231390c3f13b82726fd981ae5ef4485e40a9980c))
+
 ## [1.2.4](https://github.com/sobird/xiaozhi/compare/v1.2.3...v1.2.4) (2026-04-13)
 
 
