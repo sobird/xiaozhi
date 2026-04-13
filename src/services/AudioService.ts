@@ -1,151 +1,150 @@
-import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
-
-import OpusScript from '@sobird/opusscript';
-
-import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto';
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
+import opus from '@discordjs/opus'
+import { aesCtrEncrypt, aesCtrDecrypt } from '@/utils/crypto'
 // import { tipSpinner } from '@/utils/spinner';
-
-import DgramService from './DgramService';
+import DgramService from './DgramService'
 
 interface AudioOptions {
   udp: {
-    server: string;
-    port: number;
-    encryption: string;
-    key: string;
-    nonce: string;
+    server: string
+    port: number
+    encryption: string
+    key: string
+    nonce: string
   }
   // 音频输入
-  inputSampleRate: SampleRate;
-  inputChannels: number;
-  inputFrameDuration: number;
+  inputSampleRate: SampleRate
+  inputChannels: number
+  inputFrameDuration: number
   // 音频输出
-  outputSampleRate: SampleRate;
-  outputChannels: number;
-  outputframeDuration?: number;
+  outputSampleRate: SampleRate
+  outputChannels: number
+  outputframeDuration?: number
 }
 
 // 单例
 export class AudioService {
-  options?: AudioOptions;
+  options?: AudioOptions
+  mic?: ChildProcessWithoutNullStreams
+  speaker?: ChildProcessWithoutNullStreams
+  sequence = 0
+  isPaused = false
 
-  mic?: ChildProcessWithoutNullStreams;
+  // 【新增】PCM 缓冲区，用于对齐 Opus 帧
+  private pcmAccumulator = Buffer.alloc(0)
 
-  speaker?: ChildProcessWithoutNullStreams;
-
-  sequence = 0;
-
-  isPaused = false;
-
-  ttsStoped = false;
-
-  // 建立音频通道
   hello(options: AudioOptions) {
-    this.options = options;
-    this.createMicrophone();
-    this.createSpeaker();
-
-    this.sequence = 0;
+    this.options = options
+    this.createMicrophone()
+    this.createSpeaker()
+    this.sequence = 0
+    this.pcmAccumulator = Buffer.alloc(0) // 重置缓冲区
   }
 
-  // 启动麦克风
   createMicrophone() {
-    if (this.mic) {
-      return;
-    }
-    if (!this.options) {
-      return;
-    }
-    const { inputSampleRate, inputChannels, inputFrameDuration } = this.options;
-    const frameSize = (inputSampleRate * inputFrameDuration) / 1000;
-    const opusScript = new OpusScript(inputSampleRate, inputChannels, OpusScript.Application.AUDIO);
+    if (this.mic || !this.options) return
+
+    const { inputSampleRate, inputChannels, inputFrameDuration } = this.options
+    const BYTES_PER_FRAME = (inputSampleRate * inputChannels * 2 * inputFrameDuration) / 1000
+
+    const encoder = new opus.OpusEncoder(inputSampleRate, inputChannels)
 
     const sox = spawn('sox', [
-      '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 捕获默认麦克风音频
-      '-t', 'raw',
-      '-r', `${inputSampleRate}`, // 采样率
-      '-b', '16', // 位深
-      '-c', `${inputChannels}`, // 声道数
-      '-e', 'signed-integer',
-      '-', // 从标准输入读取数据
-    ]);
+      '-q', // 静音模式，减少 stderr 输出
+      '-t',
+      process.platform === 'win32' ? 'waveaudio' : 'coreaudio',
+      '-d',
+      '-t',
+      'raw',
+      '-r',
+      `${inputSampleRate}`,
+      '-b',
+      '16',
+      '-c',
+      `${inputChannels}`,
+      '-e',
+      'signed-integer',
+      '-',
+    ])
 
-    const mic = sox.stdout;
+    const micStream = sox.stdout
 
-    sox.stderr.on('data', () => {
-      // const lns = chunk.toString().split('\n');
-      // const last = lns[lns.length - 1];
-      // const parts = last.split()
+    micStream.on('data', (chunk: Buffer) => {
+      if (this.isPaused || !this.options) return
 
-      // process.stdout.write('\r'); // 移动光标到行首
-      // process.stdout.write('\x1b[2K'); // 清除当前行
-      // process.stdout.write(last);
-      // console.log(lns);
-    });
+      // 1. 将新数据放入蓄水池
+      this.pcmAccumulator = Buffer.concat([this.pcmAccumulator, chunk])
 
-    // mic.on('readable', () => {
-    //   console.log('有数据可读');
-    //   const chunk = mic.read();
-    //   while (chunk !== null) {
-    //     console.log(`读取到 ${chunk.length} 字节的数据`);
-    //   }
-    // });
+      // 2. 只要池子里的水够一帧，就循环处理
+      while (this.pcmAccumulator.length >= BYTES_PER_FRAME) {
+        // 截取固定长度的一帧
+        const frame = this.pcmAccumulator.subarray(0, BYTES_PER_FRAME)
+        // 池子中扣除已处理的数据
+        this.pcmAccumulator = this.pcmAccumulator.subarray(BYTES_PER_FRAME)
 
-    mic.on('data', (data: Buffer) => {
-      if (this.isPaused) {
-        return;
+        try {
+          // 3. 此时的 frame 长度固定为 640，encoder 不再会报错
+          const encodedBuffer = encoder.encode(frame)
+
+          this.sendAudioPacket(encodedBuffer)
+        } catch (err) {
+          console.error('Opus Encode Error:', err)
+        }
       }
-      if (!this.options) {
-        return;
-      }
-      const {
-        key, nonce, port, server,
-      } = this.options.udp;
+    })
 
-      const encodedBuffer = opusScript.encode(data, frameSize);
-      const encodedBufferLengthHex = encodedBuffer.length.toString(16).padStart(4, '0');
-      this.sequence += 1;
-      const sequenceHex = this.sequence.toString(16).padStart(8, '0');
+    sox.on('close', () => {
+      this.mic = undefined
+    })
+    this.mic = sox
+  }
 
-      const newNonce = nonce.slice(0, 4)
-      + encodedBufferLengthHex + nonce.slice(8, 24) + sequenceHex;
-      const encryptedData = aesCtrEncrypt(key, newNonce, encodedBuffer);
-      const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData]);
+  // 抽离发送逻辑，保持代码整洁
+  private sendAudioPacket(encodedBuffer: Buffer) {
+    if (!this.options) return
+    const { key, nonce, port, server } = this.options.udp
 
-      // console.log('packet', packet);
-      DgramService.send(packet, port, server, (err) => {
-        if (err) console.error('Error sending audio:', err);
-      });
-    });
+    const encodedBufferLengthHex = encodedBuffer.length.toString(16).padStart(4, '0')
+    this.sequence += 1
+    const sequenceHex = this.sequence.toString(16).padStart(8, '0')
 
-    mic.on('error', (err) => {
-      console.error(`send audio error: ${err}`);
-    });
+    const newNonce = nonce.slice(0, 4) + encodedBufferLengthHex + nonce.slice(8, 24) + sequenceHex
+    const encryptedData = aesCtrEncrypt(key, newNonce, encodedBuffer)
+    const packet = Buffer.concat([Buffer.from(newNonce, 'hex'), encryptedData])
 
-    this.mic = sox;
+    DgramService.send(packet, port, server, (err) => {
+      if (err) console.error('Error sending audio:', err)
+    })
   }
 
   // 启动扬声器
   createSpeaker() {
     if (this.speaker) {
-      return;
+      return
     }
 
     if (!this.options) {
-      return;
+      return
     }
 
-    const { outputSampleRate, outputChannels } = this.options;
+    const { outputSampleRate, outputChannels } = this.options
 
     const sox = spawn('sox', [
-      '-t', 'raw', // 指定输入格式为原始音频数据
-      '-r', `${outputSampleRate}`, // 采样率
-      '-b', '16', // 位深
-      '-c', `${outputChannels}`, // 声道数
-      '-e', 'signed-integer',
+      '-t',
+      'raw', // 指定输入格式为原始音频数据
+      '-r',
+      `${outputSampleRate}`, // 采样率
+      '-b',
+      '16', // 位深
+      '-c',
+      `${outputChannels}`, // 声道数
+      '-e',
+      'signed-integer',
       '-', // 从标准输入读取数据
-      '-t', process.platform === 'win32' ? 'waveaudio' : 'coreaudio', '-d', // 输出到默认音频设备
-    ]);
+      '-t',
+      process.platform === 'win32' ? 'waveaudio' : 'coreaudio',
+      '-d', // 输出到默认音频设备
+    ])
 
     // let timer: NodeJS.Timeout;
     sox.stderr.on('data', () => {
@@ -153,12 +152,10 @@ export class AudioService {
       // if (lns.length > 1) {
       //   return;
       // }
-
       // process.stdout.write('\r'); // 移动光标到行首
       // process.stdout.write('\x1b[2K'); // 清除当前行
       // process.stdout.write(data.toString());
       // // console.error(data.toString());
-
       // if (!this.ttsStoped) {
       //   return;
       // }
@@ -168,40 +165,40 @@ export class AudioService {
       //   // process.stdout.write('\x1b[2K'); // 清除当前行
       //   tipSpinner.start();
       // }, 200);
-    });
+    })
 
-    const opusScript = new OpusScript(outputSampleRate, outputChannels, OpusScript.Application.AUDIO);
+    const encoder2 = new opus.OpusEncoder(outputSampleRate, outputChannels)
 
     DgramService.on('message', (data) => {
       if (!this.options) {
-        return;
+        return
       }
-      const { key } = this.options.udp;
+      const { key } = this.options.udp
 
-      const nonce = data.subarray(0, 16);
-      const encryptedBuffer = data.subarray(16);
-      const decryptedBuffer = aesCtrDecrypt(key, nonce.toString('hex'), encryptedBuffer);
-      const decodeBuffer = opusScript.decode(decryptedBuffer);
+      const nonce = data.subarray(0, 16)
+      const encryptedBuffer = data.subarray(16)
+      const decryptedBuffer = aesCtrDecrypt(key, nonce.toString('hex'), encryptedBuffer)
+      const decodeBuffer = encoder2.decode(decryptedBuffer)
 
-      sox.stdin.write(decodeBuffer);
-    });
+      sox.stdin.write(decodeBuffer)
+    })
 
-    this.speaker = sox;
+    this.speaker = sox
   }
 
   pauseMicrophone() {
     if (!this.mic) {
-      return;
+      return
     }
-    this.isPaused = true;
+    this.isPaused = true
   }
 
   resumeMicrophone() {
     if (!this.mic) {
-      return;
+      return
     }
-    this.isPaused = false;
+    this.isPaused = false
   }
 }
 
-export default new AudioService();
+export default new AudioService()

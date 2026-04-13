@@ -1,4 +1,5 @@
-navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+navigator.mediaDevices
+  .getUserMedia({ audio: true, video: false })
   .then((stream) => {
     const audioContext = new AudioContext();
     const source = audioContext.createMediaStreamSource(stream);
@@ -13,5 +14,5 @@ navigator.mediaDevices.getUserMedia({ audio: true, video: false })
     processor.connect(audioContext.destination);
   })
   .catch((error) => {
-    console.error('Error accessing media devices:', error);
+    console.error("Error accessing media devices:", error);
   });

@@ -2,17 +2,12 @@
 Run your XiaoZhi AI on the terminal
 
 [![npm][npm]][npm-url]
+![TypeScript][typescript]
+![Node.js][node]
+![CLI][cli]
 [![Build Status][build-status]][build-status-url]
+[![License][license]][license-url]
 [![Install Size][size]][size-url]
-
-<!-- Badges -->
-
-[npm]: https://img.shields.io/npm/v/@sobird/xiaozhi.svg
-[npm-url]: https://www.npmjs.com/package/@sobird/xiaozhi
-[build-status]: https://img.shields.io/github/actions/workflow/status/sobird/xiaozhi/release-please.yml?label=CI&logo=github
-[build-status-url]: https://github.com/sobird/xiaozhi/actions
-[size]: https://packagephobia.com/badge?p=@sobird/xiaozhi
-[size-url]: https://packagephobia.com/result?p=@sobird/xiaozhi
 
 ## Usage
 
@@ -140,3 +135,17 @@ Audio:
           Output Source: Internal Speakers
 
 ```
+
+
+<!-- Badges -->
+[npm]: https://img.shields.io/npm/v/@sobird/xiaozhi.svg?style=flat-square&logo=npm&label=@sobird/xiaozhi
+[npm-url]: https://www.npmjs.com/package/@sobird/xiaozhi
+[build-status]: https://img.shields.io/github/actions/workflow/status/sobird/xiaozhi/release.yml?label=CI&logo=github&style=flat-square
+[build-status-url]: https://github.com/sobird/xiaozhi/actions
+[size]: https://img.shields.io/badge/dynamic/json?style=flat-square&label=mass&query=$.publish.pretty&url=https://packagephobia.com/v2/api.json?p=@sobird/xiaozhi&color=blueviolet
+[size-url]: https://packagephobia.com/result?p=@sobird/xiaozhi
+[license]: https://img.shields.io/github/license/sobird/xiaozhi.svg?style=flat-square&v=1
+[license-url]: https://github.com/sobird/xiaozhi/blob/master/LICENSE
+[typescript]: https://img.shields.io/badge/-TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white
+[cli]: https://img.shields.io/badge/-CLI-000000?style=flat-square&logo=gnu-bash
+[node]: https://img.shields.io/badge/-Node.js-339933?style=flat-square&logo=node.js&logoColor=white

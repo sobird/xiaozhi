@@ -88,6 +88,7 @@ export default {
       headers: {
         'Device-Id': MAC_ADDRESS,
         'Content-Type': 'application/json',
+        'User-Agent': 'Node/1.0.0',
       },
     }).then<OtaInfo>((res) => {
       return res.json()
