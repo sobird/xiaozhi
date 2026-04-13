@@ -12,7 +12,7 @@ const result = await Bun.build({
   format: 'esm',
   minify: true,
   // compile: true,
-  // banner,
+  banner: '#!/usr/bin/env node',
 })
 
 if (!result.success) {

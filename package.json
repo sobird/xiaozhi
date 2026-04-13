@@ -19,7 +19,7 @@
     "url": "git+https://github.com/sobird/xiaozhi.git"
   },
   "bin": {
-    "xiaozhi": "src/cli.ts"
+    "xiaozhi": "dist/cli.js"
   },
   "files": [
     "dist"

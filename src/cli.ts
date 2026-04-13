@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 /**
  * Run your XiaoZhi AI on the terminal
  *
