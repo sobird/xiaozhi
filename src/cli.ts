@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 
 /**
  * Run your XiaoZhi AI on the terminal
@@ -7,7 +7,7 @@
  */
 // import readline from 'readline';
 
-import { Command } from '@commander-js/extra-typings'
+import { Command } from 'commander'
 import ora from 'ora'
 import { randomWave } from '@/utils/randomWave'
 import { version, description } from '../package.json' with { type: 'json' }

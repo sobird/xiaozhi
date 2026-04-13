@@ -33,8 +33,8 @@ v22.1.0
 ```sh
 npm i -g @sobird/xiaozhi
 
-# Run xzai on the terminal and start a chat
-xzai
+# Run xiaozhi on the terminal and start a chat
+xiaozhi
 ```
 **Note:** Press the spacebar to start chatting(No need to keep pressing), Press the spacebar again to complete the voice input.
 
@@ -44,21 +44,17 @@ xzai
 # clone repo
 git clone https://github.com/sobird/xiaozhi.git
 # install deps
-pnpm install
+bun install
 # start run
-pnpm start
-# or npm link to xzai cli to global
+bun start
+# or npm link to xiaozhi cli to global
 npm link
 
 # Run on the terminal
-xzai
+xiaozhi
 ```
 
-## Wechat
 
-```sh
-npx localtunnel --port 3000
-```
 
 ## FAQ
 
