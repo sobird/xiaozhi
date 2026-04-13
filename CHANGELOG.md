@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/sobird/xiaozhi/compare/v1.2.3...v1.2.4) (2026-04-13)
+
+
+### Bug Fixes
+
+* improve speech recognition and audio handling ([2c83b47](https://github.com/sobird/xiaozhi/commit/2c83b47b07d6c4c4a6a22b26ae1d328def8b10db))
+
 ## [1.2.3](https://github.com/sobird/xiaozhi/compare/v1.2.2...v1.2.3) (2025-03-11)
 
 
